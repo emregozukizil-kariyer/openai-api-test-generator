@@ -36,8 +36,11 @@ public class OpenAISwaggerTestGenerator {
             return;
         }
 
+        String swaggerUrl = args.length > 0 ? args[0] : SWAGGER_URL;
+        System.out.println("📌 Using Swagger URL: " + swaggerUrl);
+
         try {
-            String swaggerJson = downloadSwaggerJson(SWAGGER_URL);
+            String swaggerJson = downloadSwaggerJson(swaggerUrl);
             String optimizedPrompt = createDetailedPrompt(swaggerJson);
             String generatedCode = generateApiTestsWithOpenAI(optimizedPrompt);
             saveGeneratedCode(generatedCode);
@@ -56,13 +59,13 @@ public class OpenAISwaggerTestGenerator {
      */
     private static String downloadSwaggerJson(String urlString) throws IOException {
         try {
-            return new String(java.net.http.HttpClient.newHttpClient()
+            return java.net.http.HttpClient.newHttpClient()
                     .send(java.net.http.HttpRequest.newBuilder()
                                     .uri(java.net.URI.create(urlString))
                                     .GET()
                                     .build(),
                             java.net.http.HttpResponse.BodyHandlers.ofString())
-                    .body().getBytes(), StandardCharsets.UTF_8);
+                    .body();
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             throw new IOException("Swagger JSON download interrupted.", e);
@@ -85,7 +88,7 @@ public class OpenAISwaggerTestGenerator {
 
         JsonNode pathsNode = rootNode.path("paths");
         if (!pathsNode.isObject()) {
-            throw new IOException("❌ ERROR: 'paths' node is missing in Swagger JSON.");
+            throw new IOException("❌ ERROR: Swagger JSON does not contain a valid 'paths' object. Please check the API documentation.");
         }
 
         // Tüm endpoint'leri işle
@@ -153,18 +156,18 @@ public class OpenAISwaggerTestGenerator {
                 ObjectMapper objectMapper = new ObjectMapper();
                 JsonNode jsonResponse = objectMapper.readTree(responseBody);
 
-                // Yanıtın beklenen formatta olup olmadığını kontrol et
-                if (!jsonResponse.has("choices") || jsonResponse.get("choices").isEmpty()) {
+                JsonNode choicesNode = jsonResponse.path("choices");
+                if (!choicesNode.isArray() || choicesNode.isEmpty()) {
                     throw new IOException("❌ ERROR: Unexpected response format from OpenAI API.");
                 }
 
-                JsonNode messageNode = jsonResponse.get("choices").get(0).get("message");
-                if (messageNode == null || !messageNode.has("content")) {
+                JsonNode messageNode = choicesNode.get(0).path("message");
+                String content = messageNode.path("content").asText(null);
+
+                if (content == null || content.isBlank()) {
                     throw new IOException("❌ ERROR: Missing 'content' field in OpenAI response.");
                 }
-
-                // Test kodlarını döndür
-                return messageNode.get("content").asText();
+                return content;
             }
         }
     }
@@ -212,13 +215,12 @@ public class OpenAISwaggerTestGenerator {
     private static void saveGeneratedCode(String code) throws IOException {
         // Dosya adını dinamik olarak oluştur (timestamp ekleyerek çakışmayı önler)
         String fileName = "GeneratedApiTests_" + System.currentTimeMillis() + ".java";
+        String filePath = "src/test/java/tests/" + fileName;
 
-        // Test kodunu dosyaya yaz
-        try (FileWriter fileWriter = new FileWriter(fileName)) {
+        try (FileWriter fileWriter = new FileWriter(filePath)) {
             fileWriter.write(code);
         }
 
-        // Başarı mesajını yazdır
-        System.out.println("✅ Test code saved to: " + fileName);
+        System.out.println("✅ Test code saved to: " + filePath);
     }
 }
