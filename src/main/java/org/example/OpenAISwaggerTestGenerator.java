@@ -26,7 +26,7 @@ public class OpenAISwaggerTestGenerator {
     // OpenAI API URL'si
     private static final String OPENAI_API_URL = "https://api.openai.com/v1/chat/completions";
 
-    // Swagger dokümantasyonunun URL'si (Örnek: GitHub API)
+    // Swagger dokümantasyonunun URL'si
     private static final String SWAGGER_URL = "https://raw.githubusercontent.com/github/rest-api-description/main/descriptions/api.github.com/api.github.com.json";
 
     public static void main(String[] args) {
@@ -37,16 +37,12 @@ public class OpenAISwaggerTestGenerator {
         }
 
         try {
-            // Swagger JSON dokümantasyonunu indir
             String swaggerJson = downloadSwaggerJson(SWAGGER_URL);
-            // OpenAI ile API test kodlarını oluştur
-            String generatedCode = generateApiTestsWithOpenAI(swaggerJson);
-            // Oluşan kodu dosyaya kaydet
+            String optimizedPrompt = createDetailedPrompt(swaggerJson);
+            String generatedCode = generateApiTestsWithOpenAI(optimizedPrompt);
             saveGeneratedCode(generatedCode);
-            // Başarı mesajı yazdır
             System.out.println("✅ API test code successfully generated.");
         } catch (Exception e) {
-            // Hata oluşursa yazdır
             e.printStackTrace();
         }
     }
@@ -80,14 +76,76 @@ public class OpenAISwaggerTestGenerator {
      * @return OpenAI tarafından üretilen test kodu
      * @throws IOException Eğer OpenAI API ile iletişim sırasında bir hata oluşursa
      */
-    private static String generateApiTestsWithOpenAI(String swaggerJson) throws IOException {
-        try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
-            // HTTP POST isteğini hazırla
-            HttpPost request = getHttpPost(swaggerJson);
+    private static String createDetailedPrompt(String swaggerJson) throws IOException {
+        ObjectMapper objectMapper = new ObjectMapper();
+        JsonNode rootNode = objectMapper.readTree(swaggerJson);
 
-            // OpenAI API'ye isteği gönder ve yanıtı al
+        StringBuilder promptBuilder = new StringBuilder();
+        promptBuilder.append("Generate Java RestAssured API tests covering all possible cases based on the following Swagger documentation.\n");
+
+        JsonNode pathsNode = rootNode.path("paths");
+        if (!pathsNode.isObject()) {
+            throw new IOException("❌ ERROR: 'paths' node is missing in Swagger JSON.");
+        }
+
+        // Tüm endpoint'leri işle
+        pathsNode.fields().forEachRemaining(entry -> {
+            String endpoint = entry.getKey();
+            JsonNode methodsNode = entry.getValue();
+
+            promptBuilder.append("\n### Endpoint: ").append(endpoint).append("\n");
+
+            methodsNode.fields().forEachRemaining(methodEntry -> {
+                String httpMethod = methodEntry.getKey().toUpperCase();
+                JsonNode methodDetails = methodEntry.getValue();
+
+                promptBuilder.append("- Method: ").append(httpMethod).append("\n");
+
+                // Parametreleri işle
+                JsonNode parameters = methodDetails.path("parameters");
+                if (parameters.isArray() && parameters.size() > 0) {
+                    promptBuilder.append("  - Parameters:\n");
+                    parameters.forEach(param -> {
+                        String name = param.path("name").asText();
+                        String type = param.path("schema").path("type").asText();
+                        boolean required = param.path("required").asBoolean(false);
+
+                        promptBuilder.append("    - ").append(name)
+                                .append(" (").append(type).append(") ")
+                                .append(required ? "[Required]" : "[Optional]").append("\n");
+                    });
+                }
+
+                // Yanıt kodlarını işle
+                JsonNode responses = methodDetails.path("responses");
+                if (responses.isObject()) {
+                    promptBuilder.append("  - Responses:\n");
+                    responses.fields().forEachRemaining(responseEntry -> {
+                        String statusCode = responseEntry.getKey();
+                        String description = responseEntry.getValue().path("description").asText();
+                        promptBuilder.append("    - ").append(statusCode).append(": ").append(description).append("\n");
+                    });
+                }
+            });
+        });
+
+        promptBuilder.append("\nGenerate the following test cases:\n")
+                .append("- Positive tests with valid parameters\n")
+                .append("- Negative tests with missing/invalid parameters\n")
+                .append("- Authentication/authorization tests\n")
+                .append("- Edge cases and error handling tests\n")
+                .append("- Chained API tests (e.g., create resource -> fetch resource -> delete resource)\n");
+
+        return promptBuilder.toString();
+    }
+
+    /**
+     * OpenAI API'sini kullanarak test kodu oluşturur.
+     */
+    private static String generateApiTestsWithOpenAI(String optimizedPrompt) throws IOException {
+        try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
+            HttpPost request = getHttpPost(optimizedPrompt);
             try (CloseableHttpResponse response = httpClient.execute(request)) {
-                // Yanıtın içeriğini oku
                 String responseBody = new String(response.getEntity().getContent().readAllBytes(), StandardCharsets.UTF_8);
                 System.out.println("🔍 OpenAI API Response: " + responseBody);
 
@@ -118,13 +176,11 @@ public class OpenAISwaggerTestGenerator {
      * @return HTTP POST isteği
      * @throws IOException Eğer istek hazırlanırken bir hata oluşursa
      */
-    private static HttpPost getHttpPost(String swaggerJson) throws IOException {
-        // Yeni bir POST isteği oluştur
+    private static HttpPost getHttpPost(String prompt) throws IOException {
         HttpPost request = new HttpPost(OPENAI_API_URL);
         request.setHeader("Authorization", "Bearer " + OPENAI_API_KEY);
         request.setHeader("Content-Type", "application/json");
 
-        // JSON payload'ını hazırla
         ObjectMapper objectMapper = new ObjectMapper();
         Map<String, Object> requestPayload = new HashMap<>();
 
@@ -134,7 +190,7 @@ public class OpenAISwaggerTestGenerator {
         List<Map<String, String>> messages = new ArrayList<>();
         Map<String, String> userMessage = new HashMap<>();
         userMessage.put("role", "user");
-        userMessage.put("content", "Generate Java RestAssured API tests based on the following Swagger documentation: " + swaggerJson);
+        userMessage.put("content", prompt);
         messages.add(userMessage);
 
         requestPayload.put("messages", messages);
