@@ -7,6 +7,6 @@ public class TestBase {
 
     @BeforeAll
     public static void setup() {
-        RestAssured.baseURI = "https://petstore.swagger.io/v2"; // Swagger destekli PetStore API
+        RestAssured.baseURI = "https://petstore.swagger.io"; // Swagger destekli PetStore API
     }
 }
