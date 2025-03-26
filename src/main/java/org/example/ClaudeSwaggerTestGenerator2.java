@@ -24,19 +24,18 @@ import java.util.logging.ConsoleHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
-import java.util.stream.Collectors;
 
 /**
  * OpenAPI/Swagger dosyalarından otomatik API test senaryoları oluşturan profesyonel uygulama.
  * Yapılandırılabilir seçenekler, multithreading desteği, gelişmiş hata yönetimi ve ilerleme takibi içerir.
  *
  * @author Claude API Test Generator
- * @version 2.0.0
+ * @version 2.1.0
  */
 public class ClaudeSwaggerTestGenerator2 {
 
     private static final Logger logger = Logger.getLogger(ClaudeSwaggerTestGenerator2.class.getName());
-    private static final String APP_VERSION = "2.0.0";
+    private static final String APP_VERSION = "2.1.0";
 
     // Varsayılan yapılandırma değerleri
     private static final int DEFAULT_MAX_RETRIES = 3;
@@ -440,94 +439,29 @@ public class ClaudeSwaggerTestGenerator2 {
     }
 
     /**
-     * Test sınıfının başlık kısmını yazar
+     * LLM için sistem prompt'u oluşturur
      *
-     * @param writer Dosya yazıcısı
-     * @throws IOException I/O hatası
+     * @return Sistem prompt'u
      */
-    private void writeTestClassHeader(FileWriter writer) throws IOException {
-        writer.write("package org.example;\n\n");
-        writer.write("import io.restassured.RestAssured;\n");
-        writer.write("import io.restassured.http.ContentType;\n");
-        writer.write("import io.restassured.response.Response;\n");
-        writer.write("import org.junit.jupiter.api.BeforeAll;\n");
-        writer.write("import org.junit.jupiter.api.Test;\n");
-        writer.write("import org.junit.jupiter.api.DisplayName;\n");
-        writer.write("import org.junit.jupiter.api.TestInfo;\n");
-        writer.write("import org.junit.jupiter.api.TestInstance;\n");
-        writer.write("import org.junit.jupiter.api.Nested;\n");
-        writer.write("import org.junit.jupiter.api.Tag;\n");
-        writer.write("import org.junit.jupiter.api.Assertions;\n");
-        writer.write("import org.junit.jupiter.params.ParameterizedTest;\n");
-        writer.write("import org.junit.jupiter.params.provider.ValueSource;\n");
-        writer.write("import static io.restassured.RestAssured.given;\n");
-        writer.write("import static org.hamcrest.Matchers.*;\n");
-        writer.write("import java.util.logging.Logger;\n\n");
-
-        writer.write("/**\n");
-        writer.write(" * API test senaryoları sınıfı\n");
-        writer.write(" * Bu sınıf otomatik olarak API Test Generator tarafından oluşturulmuştur.\n");
-        writer.write(" * Sürüm " + APP_VERSION + "\n");
-        writer.write(" */\n");
-        writer.write("@TestInstance(TestInstance.Lifecycle.PER_CLASS)\n");
-        writer.write("public class " + config.getTestClassName() + " {\n\n");
-        writer.write("    private static final Logger logger = Logger.getLogger(" + config.getTestClassName() + ".class.getName());\n\n");
-        writer.write("    @BeforeAll\n");
-        writer.write("    public static void setup() {\n");
-        writer.write("        RestAssured.baseURI = \"" + config.getBaseUri() + "\";\n");
-        writer.write("        // İsteğe bağlı yapılandırma ayarları\n");
-        writer.write("        RestAssured.enableLoggingOfRequestAndResponseIfValidationFails();\n");
-        writer.write("    }\n\n");
-    }
-
-    /**
-     * Test sınıfının bitiş kısmını yazar
-     *
-     * @param writer Dosya yazıcısı
-     * @throws IOException I/O hatası
-     */
-    private void writeTestClassFooter(FileWriter writer) throws IOException {
-        writer.write("}\n");
-    }
-
-    /**
-     * Root JSON objesinden tüm endpointleri toplar
-     *
-     * @param rootNode JSON kök düğümü
-     * @return Endpoint bilgileri listesi
-     */
-    private List<EndpointInfo> collectEndpoints(JsonNode rootNode) {
-        List<EndpointInfo> endpoints = new ArrayList<>();
-
-        JsonNode pathsNode = rootNode.get("paths");
-        Iterator<Map.Entry<String, JsonNode>> pathsIterator = pathsNode.fields();
-
-        while (pathsIterator.hasNext()) {
-            Map.Entry<String, JsonNode> pathEntry = pathsIterator.next();
-            String endpointPath = pathEntry.getKey();
-            JsonNode methodsNode = pathEntry.getValue();
-
-            Iterator<Map.Entry<String, JsonNode>> methodsIterator = methodsNode.fields();
-            while (methodsIterator.hasNext()) {
-                Map.Entry<String, JsonNode> methodEntry = methodsIterator.next();
-                String httpMethod = methodEntry.getKey();
-                JsonNode operationNode = methodEntry.getValue();
-
-                // Standart olmayan alanları filtrele
-                if (!httpMethod.equals("parameters") && !httpMethod.equals("summary") && !httpMethod.equals("description")) {
-                    endpoints.add(new EndpointInfo(endpointPath, httpMethod, operationNode));
-                }
-            }
-        }
-
-        return endpoints;
+    private String createSystemPrompt() {
+        return "Sen bir API test otomasyonu uzmanısın. Verilen endpoint için kapsamlı, gerçekçi " +
+                "ve çalıştırılabilir REST Assured ve JUnit 5 test senaryoları oluştur.\n\n" +
+                "Önemli Kurallar:\n" +
+                "1. ASLA import ifadeleri ekleme - bunlar zaten sınıf başında tanımlanmıştır\n" +
+                "2. ASLA yeni sınıf tanımı oluşturma - yalnızca metod içeriği döndür\n" +
+                "3. ASLA test metodunun imzasını dahil etme - sadece metod içeriğini ver\n" +
+                "4. Her senaryoyu açıklayan Türkçe yorumlar ekle\n" +
+                "5. Tüm senaryoları tek bir test metodu içinde oluştur, ayrı metodlar oluşturma\n" +
+                "6. Rest Assured kütüphanesinin given(), when(), then() zincirini kullan\n" +
+                "7. JUnit 5 Assertions kullan (assertEquals, assertTrue vb.)\n" +
+                "8. Kod organizasyonu için bölüm yorumları ekle\n";
     }
 
     /**
      * Belirli bir endpoint için test senaryosu oluşturma istemcisi oluşturur
      *
-     * @param endpointPath Endpoint yolu
-     * @param httpMethod HTTP metodu
+     * @param endpointPath  Endpoint yolu
+     * @param httpMethod    HTTP metodu
      * @param operationNode Operasyon düğümü
      * @return Oluşturulan prompt
      */
@@ -636,29 +570,148 @@ public class ClaudeSwaggerTestGenerator2 {
         }
 
         // İstenen test senaryoları
-        prompt.append("JUnit 5 ve RestAssured kullanarak aşağıdaki durumları test eden bir test metodu oluştur:\n");
-        prompt.append("1. Başarılı istek durumu - doğru parametreler ile yapılan istek ve 2xx yanıt kontrolü\n");
-        prompt.append("2. Geçersiz parametreler ile yapılan istek - validasyon hatası durumu\n");
-        prompt.append("3. Eksik parametreler ile yapılan istek - zorunlu alan eksikliği durumu\n");
-        prompt.append("4. Temel hata durumları\n");
-        prompt.append("5. API yanıt süresi performans kontrolü\n");
+        prompt.append("\nAşağıdaki durumları test eden bir kod oluştur (import ifadeleri veya class tanımı olmadan SADECE metod içeriği olarak):\n");
+        prompt.append("1. Başarılı istek: Doğru parametreler ile çağrı yapıp 2xx yanıt kontrolü\n");
+        prompt.append("2. Geçersiz parametre hatası: Hatalı/geçersiz parametrelerle çağrı yapıp hata kontrolü\n");
+        prompt.append("3. Eksik parametre hatası: Zorunlu parametreleri eksik gönderip hata kontrolü\n");
+        prompt.append("4. Performans kontrolü: Yanıt süresinin ölçümü (assertResponseTime yardımcı metodunu kullan)\n");
 
-        prompt.append("\nÖnemli Notlar:\n");
-        prompt.append("- Her test senaryosu için açıklayıcı Türkçe yorumlar ekle\n");
-        prompt.append("- Test sınıfı içinde @Test ve @DisplayName kullanımını göster\n");
-        prompt.append("- JUnit 5'in assertThat, assertions ve hamcrest matchers kullan\n");
-        prompt.append("- Rest Assured'ın tüm özelliklerini (when, given, then, extractResponse) göster\n");
-        prompt.append("- Sadece test metodunun içeriğini döndür, tam sınıfı değil\n");
+        prompt.append("\nÖnemli Kurallar:\n");
+        prompt.append("- İmport ifadeleri EKLEME - bunlar zaten sınıf başında tanımlanmıştır\n");
+        prompt.append("- Rest Assured için given(), when(), then() zinciri kullan\n");
+        prompt.append("- Türkçe açıklama yorumları ekle\n");
+        prompt.append("- Test metodu içerisinde yeni metodlar tanımlama\n");
+        prompt.append("- Sınıf tanımları YAPMA, sadece metod içeriği döndür\n");
+        prompt.append("- Tüm testleri tek bir metod içinde organize et\n");
 
         return prompt.toString();
     }
 
     /**
+     * Test sınıfının başlık kısmını yazar
+     *
+     * @param writer Dosya yazıcısı
+     * @throws IOException I/O hatası
+     */
+    private void writeTestClassHeader(FileWriter writer) throws IOException {
+        writer.write("package org.example;\n\n");
+
+        // Temel importlar
+        writer.write("import io.restassured.RestAssured;\n");
+        writer.write("import io.restassured.http.ContentType;\n");
+        writer.write("import io.restassured.response.Response;\n");
+        writer.write("import io.restassured.specification.RequestSpecification;\n");
+
+        // JUnit importları
+        writer.write("import org.junit.jupiter.api.BeforeAll;\n");
+        writer.write("import org.junit.jupiter.api.BeforeEach;\n");
+        writer.write("import org.junit.jupiter.api.Test;\n");
+        writer.write("import org.junit.jupiter.api.DisplayName;\n");
+        writer.write("import org.junit.jupiter.api.TestInfo;\n");
+        writer.write("import org.junit.jupiter.api.TestInstance;\n");
+        writer.write("import org.junit.jupiter.api.Nested;\n");
+        writer.write("import org.junit.jupiter.api.Tag;\n");
+        writer.write("import org.junit.jupiter.api.Assertions;\n");
+        writer.write("import org.junit.jupiter.params.ParameterizedTest;\n");
+        writer.write("import org.junit.jupiter.params.provider.ValueSource;\n");
+
+        // RestAssured statik importları
+        writer.write("import static io.restassured.RestAssured.given;\n");
+        writer.write("import static io.restassured.RestAssured.when;\n");
+
+        // Hamcrest importları
+        writer.write("import static org.hamcrest.Matchers.*;\n");
+        writer.write("import static org.hamcrest.MatcherAssert.assertThat;\n");
+
+        // JUnit Assertions statik importları
+        writer.write("import static org.junit.jupiter.api.Assertions.*;\n");
+
+        // Java standart importları
+        writer.write("import java.util.logging.Logger;\n");
+        writer.write("import java.util.Map;\n");
+        writer.write("import java.util.HashMap;\n");
+        writer.write("import java.time.Duration;\n\n");
+
+        // JavaDoc ve sınıf tanımı
+        writer.write("/**\n");
+        writer.write(" * API test senaryoları sınıfı\n");
+        writer.write(" * Bu sınıf otomatik olarak API Test Generator tarafından oluşturulmuştur.\n");
+        writer.write(" * Sürüm " + APP_VERSION + "\n");
+        writer.write(" */\n");
+        writer.write("@TestInstance(TestInstance.Lifecycle.PER_CLASS)\n");
+        writer.write("public class " + config.getTestClassName() + " {\n\n");
+
+        // Logger ve ortak değişkenler
+        writer.write("    private static final Logger logger = Logger.getLogger(" + config.getTestClassName() + ".class.getName());\n\n");
+
+        // Setup metodu
+        writer.write("    @BeforeAll\n");
+        writer.write("    public static void setup() {\n");
+        writer.write("        RestAssured.baseURI = \"" + config.getBaseUri() + "\";\n");
+        writer.write("        RestAssured.enableLoggingOfRequestAndResponseIfValidationFails();\n");
+        writer.write("    }\n\n");
+
+        // Ortak yardımcı metodlar
+        writer.write("    /**\n");
+        writer.write("     * API çağrısının performans kontrolü için yardımcı metod\n");
+        writer.write("     */\n");
+        writer.write("    private void assertResponseTime(Response response, long maxAllowedTime) {\n");
+        writer.write("        long responseTime = response.getTime();\n");
+        writer.write("        logger.info(\"Yanıt süresi: \" + responseTime + \" ms\");\n");
+        writer.write("        Assertions.assertTrue(responseTime < maxAllowedTime,\n");
+        writer.write("                \"API yanıt süresi \" + maxAllowedTime + \" ms'den fazla: \" + responseTime + \" ms\");\n");
+        writer.write("    }\n\n");
+    }
+
+    /**
+     * Test sınıfının bitiş kısmını yazar
+     *
+     * @param writer Dosya yazıcısı
+     * @throws IOException I/O hatası
+     */
+    private void writeTestClassFooter(FileWriter writer) throws IOException {
+        writer.write("}\n");
+    }
+
+    /**
+     * Root JSON objesinden tüm endpointleri toplar
+     *
+     * @param rootNode JSON kök düğümü
+     * @return Endpoint bilgileri listesi
+     */
+    private List<EndpointInfo> collectEndpoints(JsonNode rootNode) {
+        List<EndpointInfo> endpoints = new ArrayList<>();
+
+        JsonNode pathsNode = rootNode.get("paths");
+        Iterator<Map.Entry<String, JsonNode>> pathsIterator = pathsNode.fields();
+
+        while (pathsIterator.hasNext()) {
+            Map.Entry<String, JsonNode> pathEntry = pathsIterator.next();
+            String endpointPath = pathEntry.getKey();
+            JsonNode methodsNode = pathEntry.getValue();
+
+            Iterator<Map.Entry<String, JsonNode>> methodsIterator = methodsNode.fields();
+            while (methodsIterator.hasNext()) {
+                Map.Entry<String, JsonNode> methodEntry = methodsIterator.next();
+                String httpMethod = methodEntry.getKey();
+                JsonNode operationNode = methodEntry.getValue();
+
+                // Standart olmayan alanları filtrele
+                if (!httpMethod.equals("parameters") && !httpMethod.equals("summary") && !httpMethod.equals("description")) {
+                    endpoints.add(new EndpointInfo(endpointPath, httpMethod, operationNode));
+                }
+            }
+        }
+
+        return endpoints;
+    }
+
+    /**
      * JSON şemasını açıklar
      *
-     * @param schema JSON şema düğümü
+     * @param schema  JSON şema düğümü
      * @param builder String builder
-     * @param indent Girinti
+     * @param indent  Girinti
      */
     private void describeSchema(JsonNode schema, StringBuilder builder, String indent) {
         if (schema == null) {
@@ -807,9 +860,9 @@ public class ClaudeSwaggerTestGenerator2 {
     /**
      * Yeniden deneme mekanizması ile test senaryosu oluşturur
      *
-     * @param prompt İstek metni
-     * @param operationId Operasyon ID
-     * @param httpMethod HTTP metodu
+     * @param prompt       İstek metni
+     * @param operationId  Operasyon ID
+     * @param httpMethod   HTTP metodu
      * @param endpointPath Endpoint yolu
      * @return Oluşturulan test senaryosu
      */
@@ -859,9 +912,9 @@ public class ClaudeSwaggerTestGenerator2 {
     /**
      * API çağrısı yaparak test senaryosu oluşturur
      *
-     * @param prompt İstek metni
-     * @param operationId Operasyon ID
-     * @param httpMethod HTTP metodu
+     * @param prompt       İstek metni
+     * @param operationId  Operasyon ID
+     * @param httpMethod   HTTP metodu
      * @param endpointPath Endpoint yolu
      * @return Oluşturulan test senaryosu
      */
@@ -871,14 +924,28 @@ public class ClaudeSwaggerTestGenerator2 {
         }
 
         List<ChatMessage> messages = new ArrayList<>();
-        messages.add(new ChatMessage(ChatMessageRole.SYSTEM.value(),
-                "Sen bir API test otomasyonu uzmanısın. Verilen endpoint için kapsamlı, gerçekçi ve çalıştırılabilir REST Assured ve JUnit 5 test senaryoları oluştur."));
+
+        // İyileştirilmiş sistem prompt'u kullan
+        messages.add(new ChatMessage(ChatMessageRole.SYSTEM.value(), createSystemPrompt()));
+
+        // Endpoint prompt'unu ekle
         messages.add(new ChatMessage(ChatMessageRole.USER.value(), prompt));
+
+        // Hiçbir import kullanmaması ve class tanımlamaması için örnek olumlu pekiştirme
+        messages.add(new ChatMessage(ChatMessageRole.ASSISTANT.value(),
+                "Anladım, REST Assured ve JUnit 5 ile test senaryosu oluşturacağım. " +
+                        "Import ifadeleri eklemeyeceğim ve sadece test metodu içeriğini döndüreceğim."));
+
+        // Son kullanıcı direktifi ekle
+        messages.add(new ChatMessage(ChatMessageRole.USER.value(),
+                "Lütfen test senaryosunu oluştur. Import ifadeleri, sınıf tanımları veya metod imzaları OLMADAN " +
+                        "SADECE metod içeriğini ver. Tüm testleri tek bir metod içinde oluştur."));
 
         ChatCompletionRequest completionRequest = ChatCompletionRequest.builder()
                 .model(config.getModel())
                 .messages(messages)
                 .maxTokens(config.getMaxTokens())
+                .temperature(0.2) // Daha tutarlı yanıtlar için düşük sıcaklık
                 .build();
 
         if (config.isVerbose()) {
@@ -899,32 +966,47 @@ public class ClaudeSwaggerTestGenerator2 {
     /**
      * API yanıtını formatlayarak test senaryosu oluşturur
      *
-     * @param response API yanıtı
-     * @param operationId Operasyon ID
-     * @param httpMethod HTTP metodu
+     * @param response     API yanıtı
+     * @param operationId  Operasyon ID
+     * @param httpMethod   HTTP metodu
      * @param endpointPath Endpoint yolu
      * @return Oluşturulan test senaryosu
      */
     private String formatTestCase(String response, String operationId, String httpMethod, String endpointPath) {
         StringBuilder formattedTestCase = new StringBuilder();
+
+        // JavaDoc yorumu ekle
         formattedTestCase.append("    /**\n");
         formattedTestCase.append("     * ").append(operationId).append(" - ")
                 .append(httpMethod.toUpperCase()).append(" ").append(endpointPath).append("\n");
         formattedTestCase.append("     */\n");
+
+        // Test anotasyonları ekle
         formattedTestCase.append("    @Test\n");
         formattedTestCase.append("    @DisplayName(\"Test ")
                 .append(operationId).append(" - ")
                 .append(httpMethod.toUpperCase()).append(" ")
                 .append(endpointPath).append("\")\n");
 
-        // İlgili HTTP metodu için tag ekle
+        // HTTP metodu için tag ekle
         formattedTestCase.append("    @Tag(\"").append(httpMethod.toLowerCase()).append("\")\n");
 
+        // Metod tanımı başlat
         formattedTestCase.append("    public void test").append(formatOperationId(operationId)).append("() {\n");
 
         // Yanıtın içeriğini temizle ve ekle
         String cleanedResponse = cleanResponse(response);
-        formattedTestCase.append("        ").append(cleanedResponse.trim().replace("\n", "\n        ")).append("\n");
+
+        // Temizlenmiş içeriği doğru girintiyle ekle
+        if (cleanedResponse.trim().isEmpty()) {
+            // Boşsa fallback içerik ekle
+            formattedTestCase.append("        // API test içeriği oluşturulamadı - lütfen manuel olarak implement edin\n");
+            formattedTestCase.append("        logger.warning(\"Test içeriği '").append(operationId).append("' için oluşturulamadı\");\n");
+        } else {
+            formattedTestCase.append("        ").append(cleanedResponse.trim().replace("\n", "\n        ")).append("\n");
+        }
+
+        // Metodu kapat
         formattedTestCase.append("    }");
 
         return formattedTestCase.toString();
@@ -937,10 +1019,16 @@ public class ClaudeSwaggerTestGenerator2 {
      * @return Temizlenmiş yanıt
      */
     private String cleanResponse(String response) {
-        // Backtick kod bloklarını temizle
+        // İlk olarak, backtick kod bloklarını temizle
         String cleaned = response.replaceAll("```java", "").replaceAll("```", "");
 
-        // Tam bir test metodu içeriyorsa, metodun içeriğini çıkar
+        // Test metodu içindeki import ifadelerini kaldır
+        cleaned = cleaned.replaceAll("(?m)^\\s*import\\s+[\\w\\.\\*]+;\\s*$", "");
+
+        // İçiçe sınıf tanımlarını kaldır
+        cleaned = cleaned.replaceAll("(?s)public\\s+class\\s+\\w+\\s*\\{.*", "");
+
+        // Fazladan olan class ve method tanımlarını temizle
         if (cleaned.contains("@Test") || cleaned.contains("public void test") || cleaned.contains("public void ")) {
             int startIndex = cleaned.indexOf("{");
             int endIndex = cleaned.lastIndexOf("}");
@@ -950,14 +1038,17 @@ public class ClaudeSwaggerTestGenerator2 {
             }
         }
 
+        // Boş satırlar varsa her birini tek bir boş satırla değiştir
+        cleaned = cleaned.replaceAll("(?m)^\\s*$\\n{2,}", "\n");
+
         return cleaned;
     }
 
     /**
      * API hatası durumunda manuel test şablonu oluşturur
      *
-     * @param endpoint Endpoint yolu
-     * @param httpMethod HTTP metodu
+     * @param endpoint    Endpoint yolu
+     * @param httpMethod  HTTP metodu
      * @param operationId Operasyon ID
      * @return Oluşturulan test şablonu
      */
@@ -1029,9 +1120,7 @@ public class ClaudeSwaggerTestGenerator2 {
         testCase.append("            .extract().response();\n\n");
 
         testCase.append("        // Performans kontrolü\n");
-        testCase.append("        long responseTime = response.getTime();\n");
-        testCase.append("        logger.info(\"Yanıt süresi: \" + responseTime + \" ms\");\n");
-        testCase.append("        Assertions.assertTrue(responseTime < 5000, \"API yanıt süresi 5 saniyeden fazla: \" + responseTime + \" ms\");\n\n");
+        testCase.append("        assertResponseTime(response, 5000); // 5 saniye zaman aşımı\n\n");
 
         testCase.append("        // Geçersiz parametre testi\n");
         testCase.append("        given()\n");
@@ -1072,9 +1161,7 @@ public class ClaudeSwaggerTestGenerator2 {
         testCase.append("            .extract().response();\n\n");
 
         testCase.append("        // Performans kontrolü\n");
-        testCase.append("        long responseTime = response.getTime();\n");
-        testCase.append("        logger.info(\"Yanıt süresi: \" + responseTime + \" ms\");\n");
-        testCase.append("        Assertions.assertTrue(responseTime < 5000, \"API yanıt süresi 5 saniyeden fazla: \" + responseTime + \" ms\");\n\n");
+        testCase.append("        assertResponseTime(response, 5000); // 5 saniye zaman aşımı\n\n");
 
         testCase.append("        // Geçersiz body testi\n");
         testCase.append("        String invalidBody = \"{\\\"invalidField\\\": \\\"value\\\"}\";\n");
@@ -1118,9 +1205,7 @@ public class ClaudeSwaggerTestGenerator2 {
         testCase.append("            .extract().response();\n\n");
 
         testCase.append("        // Performans kontrolü\n");
-        testCase.append("        long responseTime = response.getTime();\n");
-        testCase.append("        logger.info(\"Yanıt süresi: \" + responseTime + \" ms\");\n");
-        testCase.append("        Assertions.assertTrue(responseTime < 5000, \"API yanıt süresi 5 saniyeden fazla: \" + responseTime + \" ms\");\n\n");
+        testCase.append("        assertResponseTime(response, 5000); // 5 saniye zaman aşımı\n\n");
 
         testCase.append("        // Geçersiz ID ile güncelleme testi\n");
         testCase.append("        given()\n");
@@ -1155,9 +1240,7 @@ public class ClaudeSwaggerTestGenerator2 {
         testCase.append("            .extract().response();\n\n");
 
         testCase.append("        // Performans kontrolü\n");
-        testCase.append("        long responseTime = response.getTime();\n");
-        testCase.append("        logger.info(\"Yanıt süresi: \" + responseTime + \" ms\");\n");
-        testCase.append("        Assertions.assertTrue(responseTime < 5000, \"API yanıt süresi 5 saniyeden fazla: \" + responseTime + \" ms\");\n\n");
+        testCase.append("        assertResponseTime(response, 5000); // 5 saniye zaman aşımı\n\n");
 
         testCase.append("        // Geçersiz ID ile silme testi\n");
         testCase.append("        given()\n");
@@ -1197,9 +1280,7 @@ public class ClaudeSwaggerTestGenerator2 {
         testCase.append("            .extract().response();\n\n");
 
         testCase.append("        // Performans kontrolü\n");
-        testCase.append("        long responseTime = response.getTime();\n");
-        testCase.append("        logger.info(\"Yanıt süresi: \" + responseTime + \" ms\");\n");
-        testCase.append("        Assertions.assertTrue(responseTime < 5000, \"API yanıt süresi 5 saniyeden fazla: \" + responseTime + \" ms\");\n\n");
+        testCase.append("        assertResponseTime(response, 5000); // 5 saniye zaman aşımı\n\n");
 
         testCase.append("        // Geçersiz alan ile güncelleme testi\n");
         testCase.append("        given()\n");
@@ -1217,8 +1298,8 @@ public class ClaudeSwaggerTestGenerator2 {
     /**
      * Genel bir HTTP metodu için test şablonu ekler
      *
-     * @param testCase Şablon oluşturucu
-     * @param endpoint Endpoint yolu
+     * @param testCase   Şablon oluşturucu
+     * @param endpoint   Endpoint yolu
      * @param httpMethod HTTP metodu
      */
     private void appendGenericTestTemplate(StringBuilder testCase, String endpoint, String httpMethod) {
@@ -1234,9 +1315,7 @@ public class ClaudeSwaggerTestGenerator2 {
         testCase.append("            .extract().response();\n\n");
 
         testCase.append("        // Performans kontrolü\n");
-        testCase.append("        long responseTime = response.getTime();\n");
-        testCase.append("        logger.info(\"Yanıt süresi: \" + responseTime + \" ms\");\n");
-        testCase.append("        Assertions.assertTrue(responseTime < 5000, \"API yanıt süresi 5 saniyeden fazla: \" + responseTime + \" ms\");\n");
+        testCase.append("        assertResponseTime(response, 5000); // 5 saniye zaman aşımı\n");
     }
 
     /**
@@ -1286,8 +1365,8 @@ public class ClaudeSwaggerTestGenerator2 {
      * Operasyon düğümünden operasyon ID'sini alır
      *
      * @param operationNode Operasyon düğümü
-     * @param httpMethod HTTP metodu
-     * @param endpoint Endpoint yolu
+     * @param httpMethod    HTTP metodu
+     * @param endpoint      Endpoint yolu
      * @return Operasyon ID
      */
     private String getOperationId(JsonNode operationNode, String httpMethod, String endpoint) {
