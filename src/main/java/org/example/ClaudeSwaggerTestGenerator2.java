@@ -16,6 +16,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.*;
@@ -29,19 +30,19 @@ import java.util.logging.SimpleFormatter;
  * OpenAPI/Swagger dosyalarından otomatik API test senaryoları oluşturan profesyonel uygulama.
  * Yapılandırılabilir seçenekler, multithreading desteği, gelişmiş hata yönetimi ve ilerleme takibi içerir.
  *
- * @author Claude API Test Generator
- * @version 2.1.0
+ * @author Emre Gozukizil
+ * @version 2.2.0
  */
 public class ClaudeSwaggerTestGenerator2 {
 
     private static final Logger logger = Logger.getLogger(ClaudeSwaggerTestGenerator2.class.getName());
-    private static final String APP_VERSION = "2.1.0";
+    private static final String APP_VERSION = "2.2.0";
 
     // Varsayılan yapılandırma değerleri
     private static final int DEFAULT_MAX_RETRIES = 3;
     private static final int DEFAULT_TIMEOUT_SECONDS = 120;
     private static final int DEFAULT_THREAD_POOL_SIZE = 4;
-    private static final String DEFAULT_OUTPUT_FILE = "api_test_cases.java";
+    private static final String DEFAULT_OUTPUT_FILE = "api_test_cases2.java";
     private static final String DEFAULT_MODEL = "gpt-3.5-turbo";
     private static final int DEFAULT_MAX_TOKENS = 2048;
 
@@ -83,10 +84,13 @@ public class ClaudeSwaggerTestGenerator2 {
                 return;
             }
 
+            // Çıktı dosyası için dinamik bir yol oluştur
+            String outputFile = createDynamicOutputFilePath(cmd.getOptionValue("output", DEFAULT_OUTPUT_FILE));
+
             // Yapılandırma oluştur
             Configuration config = Configuration.builder()
-                    .inputFile(cmd.getOptionValue("input", "endpoints.json"))
-                    .outputFile(cmd.getOptionValue("output", DEFAULT_OUTPUT_FILE))
+                    .inputFile(cmd.getOptionValue("input", "src/main/resources/endpoints2.json"))
+                    .outputFile(outputFile)
                     .apiKeyEnvVar(cmd.getOptionValue("api-key-env", "OPENAI_API_KEY"))
                     .model(cmd.getOptionValue("model", DEFAULT_MODEL))
                     .maxTokens(Integer.parseInt(cmd.getOptionValue("max-tokens", String.valueOf(DEFAULT_MAX_TOKENS))))
@@ -94,8 +98,8 @@ public class ClaudeSwaggerTestGenerator2 {
                     .timeoutSeconds(Integer.parseInt(cmd.getOptionValue("timeout", String.valueOf(DEFAULT_TIMEOUT_SECONDS))))
                     .threadPoolSize(Integer.parseInt(cmd.getOptionValue("threads", String.valueOf(DEFAULT_THREAD_POOL_SIZE))))
                     .verbose(cmd.hasOption("verbose"))
-                    .testClassName(cmd.getOptionValue("class-name", "ApiAutomationTests"))
-                    .baseUri(cmd.getOptionValue("base-uri", "https://your-api-base-url.com"))
+                    .testClassName(getClassNameFromPath(outputFile))
+                    .baseUri(cmd.getOptionValue("base-uri", "https://stage-job-k8s.isinolsun.com/swagger/v1/swagger.json"))
                     .useFallbackOnError(cmd.hasOption("fallback"))
                     .build();
 
@@ -105,8 +109,68 @@ public class ClaudeSwaggerTestGenerator2 {
 
         } catch (Exception e) {
             logger.log(Level.SEVERE, "Uygulama çalıştırılırken hata oluştu", e);
+            String errorDetail = e.getMessage();
+            if (e.getCause() != null) {
+                errorDetail += " Sebep: " + e.getCause().getMessage();
+            }
+            logger.severe("Hata detayı: " + errorDetail);
             System.exit(1);
         }
+    }
+
+    /**
+     * Dosya yolundan sınıf adını çıkartır
+     *
+     * @param filePath Dosya yolu
+     * @return Sınıf adı
+     */
+    private static String getClassNameFromPath(String filePath) {
+        String fileName = new File(filePath).getName();
+        // .java uzantısını kaldır
+        if (fileName.endsWith(".java")) {
+            fileName = fileName.substring(0, fileName.length() - 5);
+        }
+        return fileName;
+    }
+
+    /**
+     * Dinamik çıktı dosyası yolu oluşturur
+     * Her çalıştırmada benzersiz bir dosya adı oluşturur
+     *
+     * @param outputFileParam Komut satırından gelen çıktı dosyası parametresi
+     * @return Oluşturulan dosya yolu
+     */
+    private static String createDynamicOutputFilePath(String outputFileParam) {
+        // src/test/java/tests klasörü altında oluştur
+        String baseDir = "src/test/java/tests";
+
+        // Klasörün var olduğundan emin ol
+        File directory = new File(baseDir);
+        if (!directory.exists()) {
+            directory.mkdirs();
+        }
+
+        // Tarih ve zaman tabanlı benzersiz dosya adı oluştur
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd_HHmmss");
+        String timestamp = dateFormat.format(new Date());
+
+        // Dosya adını belirle: TestClassName_Timestamp.java
+        String className = "GeneratedApiTests";
+        if (outputFileParam != null && !outputFileParam.isEmpty()) {
+            // Gelen parametreden sınıf adını çıkart
+            String fileName = new File(outputFileParam).getName();
+            if (fileName.endsWith(".java")) {
+                className = fileName.substring(0, fileName.length() - 5);
+            } else {
+                className = fileName;
+            }
+        }
+
+        String fileName = className + "_" + timestamp + ".java";
+        String filePath = baseDir + File.separator + fileName;
+
+        logger.info("Çıktı dosyası dinamik olarak oluşturuldu: " + filePath);
+        return filePath;
     }
 
     /**
@@ -157,7 +221,7 @@ public class ClaudeSwaggerTestGenerator2 {
                 .longOpt("input")
                 .hasArg()
                 .argName("DOSYA")
-                .desc("OpenAPI/Swagger JSON dosyası [varsayılan: endpoints.json]")
+                .desc("OpenAPI/Swagger JSON dosyası [varsayılan: endpoints2.json]")
                 .build());
 
         options.addOption(Option.builder("o")
@@ -248,7 +312,7 @@ public class ClaudeSwaggerTestGenerator2 {
         System.out.println("\nSeçenekler:");
         System.out.println("  -h, --help                  Bu yardım mesajını göster");
         System.out.println("  -v, --version               Uygulama versiyonunu göster");
-        System.out.println("  -i, --input <DOSYA>         OpenAPI/Swagger JSON dosyası [varsayılan: endpoints.json]");
+        System.out.println("  -i, --input <DOSYA>         OpenAPI/Swagger JSON dosyası [varsayılan: endpoints2.json]");
         System.out.println("  -o, --output <DOSYA>        Çıktı Java dosyası [varsayılan: " + DEFAULT_OUTPUT_FILE + "]");
         System.out.println("  -k, --api-key-env <ENV_VAR> API anahtarını içeren çevre değişkeni [varsayılan: OPENAI_API_KEY]");
         System.out.println("  -m, --model <MODEL>         Kullanılacak LLM modeli [varsayılan: " + DEFAULT_MODEL + "]");
@@ -322,11 +386,16 @@ public class ClaudeSwaggerTestGenerator2 {
 
             // Test senaryolarını oluşturacağımız dosya
             File outputFile = new File(config.getOutputFile());
-            outputFile.getParentFile().mkdirs(); // Dizin yapısını oluştur
+            if (outputFile.getParentFile() != null) {
+                outputFile.getParentFile().mkdirs();
+            }
 
             try (FileWriter outputWriter = new FileWriter(outputFile)) {
                 // Test sınıfının başlangıcını yazma
                 writeTestClassHeader(outputWriter);
+
+                // Tekrar kullanılabilir yardımcı metodlar ekle
+                writeUtilityMethods(outputWriter);
 
                 // Tüm endpointleri topla
                 List<EndpointInfo> endpoints = collectEndpoints(rootNode);
@@ -394,6 +463,110 @@ public class ClaudeSwaggerTestGenerator2 {
     }
 
     /**
+     * Tekrar kullanılabilir yardımcı metodları test sınıfına ekler
+     * Bu metodlar kodda tekrarı azaltmak için kullanılır
+     *
+     * @param writer Dosya yazıcısı
+     * @throws IOException I/O hatası
+     */
+    private void writeUtilityMethods(FileWriter writer) throws IOException {
+        writer.write("    /**\n");
+        writer.write("     * Ortak request specification oluşturur\n");
+        writer.write("     * Temel headerlar ve parametreler için kullanılır\n");
+        writer.write("     */\n");
+        writer.write("    private RequestSpecification commonRequestSpec() {\n");
+        writer.write("        return given()\n");
+        writer.write("            .contentType(ContentType.JSON)\n");
+        writer.write("            .accept(ContentType.JSON)\n");
+        writer.write("            .log().ifValidationFails();\n");
+        writer.write("    }\n\n");
+
+        writer.write("    /**\n");
+        writer.write("     * Oturum gerektiren istekler için request specification oluşturur\n");
+        writer.write("     */\n");
+        writer.write("    private RequestSpecification authorizedRequestSpec() {\n");
+        writer.write("        return commonRequestSpec()\n");
+        writer.write("            .header(\"Authorization\", \"Bearer \" + getTestToken());\n");
+        writer.write("    }\n\n");
+
+        writer.write("    /**\n");
+        writer.write("     * Test için token oluşturur veya döndürür\n");
+        writer.write("     * Gerçek uygulamada burada token alınması için gerekli API çağrısı yapılabilir\n");
+        writer.write("     */\n");
+        writer.write("    private String getTestToken() {\n");
+        writer.write("        // Test amaçlı sabit bir token\n");
+        writer.write("        return \"test-token-for-automation\";\n");
+        writer.write("    }\n\n");
+
+        writer.write("    /**\n");
+        writer.write("     * Test verisi oluşturan yardımcı metod\n");
+        writer.write("     * Çeşitli kaynak türleri için test verisi oluşturur\n");
+        writer.write("     */\n");
+        writer.write("    private String createTestData(String resourceType) {\n");
+        writer.write("        String timestamp = String.valueOf(System.currentTimeMillis());\n");
+        writer.write("        switch (resourceType.toLowerCase()) {\n");
+        writer.write("            case \"user\":\n");
+        writer.write("                return \"{\\n\" +\n");
+        writer.write("                    \"    \\\"name\\\": \\\"Test User \" + timestamp + \"\\\",\\n\" +\n");
+        writer.write("                    \"    \\\"email\\\": \\\"test\" + timestamp + \"@example.com\\\",\\n\" +\n");
+        writer.write("                    \"    \\\"active\\\": true\\n\" +\n");
+        writer.write("                    \"}\";\n");
+        writer.write("            case \"company\":\n");
+        writer.write("                return \"{\\n\" +\n");
+        writer.write("                    \"    \\\"name\\\": \\\"Test Company \" + timestamp + \"\\\",\\n\" +\n");
+        writer.write("                    \"    \\\"description\\\": \\\"Test şirketi\\\",\\n\" +\n");
+        writer.write("                    \"    \\\"employeeCount\\\": 50\\n\" +\n");
+        writer.write("                    \"}\";\n");
+        writer.write("            case \"job\":\n");
+        writer.write("                return \"{\\n\" +\n");
+        writer.write("                    \"    \\\"title\\\": \\\"Test Job \" + timestamp + \"\\\",\\n\" +\n");
+        writer.write("                    \"    \\\"description\\\": \\\"Test iş ilanı\\\",\\n\" +\n");
+        writer.write("                    \"    \\\"salary\\\": 5000,\\n\" +\n");
+        writer.write("                    \"    \\\"isRemote\\\": true\\n\" +\n");
+        writer.write("                    \"}\";\n");
+        writer.write("            default:\n");
+        writer.write("                return \"{\\n\" +\n");
+        writer.write("                    \"    \\\"name\\\": \\\"Test Resource \" + timestamp + \"\\\",\\n\" +\n");
+        writer.write("                    \"    \\\"description\\\": \\\"Test kaynağı\"\\n\" +\n");
+        writer.write("                    \"}\";\n");
+        writer.write("        }\n");
+        writer.write("    }\n\n");
+
+        writer.write("    /**\n");
+        writer.write("     * Geçersiz test verisi oluşturan yardımcı metod\n");
+        writer.write("     * Eksik veya hatalı veri için kullanılır\n");
+        writer.write("     */\n");
+        writer.write("    private String createInvalidTestData(String resourceType) {\n");
+        writer.write("        // Eksik zorunlu alanlar içeren geçersiz veri\n");
+        writer.write("        switch (resourceType.toLowerCase()) {\n");
+        writer.write("            case \"user\":\n");
+        writer.write("                return \"{\\n\" +\n");
+        writer.write("                    \"    \\\"email\\\": \\\"invalid-email\\\"\\n\" +\n");
+        writer.write("                    \"}\";\n");
+        writer.write("            case \"company\":\n");
+        writer.write("                return \"{\\n\" +\n");
+        writer.write("                    \"    \\\"employeeCount\\\": -10\\n\" +\n");
+        writer.write("                    \"}\";\n");
+        writer.write("            default:\n");
+        writer.write("                return \"{\\n\" +\n");
+        writer.write("                    \"    \\\"id\\\": 0\\n\" +\n");
+        writer.write("                    \"}\";\n");
+        writer.write("        }\n");
+        writer.write("    }\n\n");
+
+        writer.write("    /**\n");
+        writer.write("     * REST assured yanıt nesnesi için performans kontrolü yapar\n");
+        writer.write("     * Uzun süren API çağrıları için uyarı verir\n");
+        writer.write("     */\n");
+        writer.write("    private void assertResponseTime(Response response, long maxAllowedTimeMs) {\n");
+        writer.write("        long responseTime = response.getTime();\n");
+        writer.write("        logger.info(\"Yanıt süresi: \" + responseTime + \" ms\");\n");
+        writer.write("        Assertions.assertTrue(responseTime < maxAllowedTimeMs,\n");
+        writer.write("            \"API yanıt süresi \" + maxAllowedTimeMs + \" ms'den fazla: \" + responseTime + \" ms\");\n");
+        writer.write("    }\n\n");
+    }
+
+    /**
      * Endpoint'i işler ve test senaryosunu oluşturur
      *
      * @param endpoint Endpoint bilgisi
@@ -439,7 +612,7 @@ public class ClaudeSwaggerTestGenerator2 {
     }
 
     /**
-     * LLM için sistem prompt'u oluşturur
+     * LLM için sistem prompt'u oluşturur - Tekrar kullanım dikkate alınmış versiyon
      *
      * @return Sistem prompt'u
      */
@@ -454,12 +627,20 @@ public class ClaudeSwaggerTestGenerator2 {
                 "5. Tüm senaryoları tek bir test metodu içinde oluştur, ayrı metodlar oluşturma\n" +
                 "6. Rest Assured kütüphanesinin given(), when(), then() zincirini kullan\n" +
                 "7. JUnit 5 Assertions kullan (assertEquals, assertTrue vb.)\n" +
-                "8. Kod organizasyonu için bölüm yorumları ekle\n";
+                "8. Kod organizasyonu için bölüm yorumları ekle\n" +
+                "9. Tekrarlayan kodları azaltmak için aşağıdaki hazır yardımcı metodları kullan:\n" +
+                "   - commonRequestSpec(): Ortak request specification oluşturur (ContentType.JSON ve loglar aktif)\n" +
+                "   - authorizedRequestSpec(): Yetkilendirme başlığı eklenmiş request specification\n" +
+                "   - createTestData(String resourceType): 'user', 'company', 'job' gibi kaynak türleri için test verisi oluşturur\n" +
+                "   - createInvalidTestData(String resourceType): Geçersiz test verisi oluşturur\n" +
+                "   - assertResponseTime(Response response, long maxTimeMs): Yanıt süresini kontrol eder\n" +
+                "10. Alternatif durum kodlarını kontrol ederken 'or()' metodunu KULLANMA, bunun yerine 'statusCode(anyOf(is(401), is(403)))' gibi Hamcrest matcher'larını kullan\n" +
+                "11. JSON şema doğrulaması için bu formatı kullan: .body(matchesJsonSchemaInClasspath(\"schemaFile.json\"))\n";
     }
 
     /**
-     * Belirli bir endpoint için test senaryosu oluşturma istemcisi oluşturur - geliştirilmiş versiyon
-     * HTTP metoduna göre özelleştirilmiş test senaryoları içerir
+     * Belirli bir endpoint için test senaryosu oluşturma istemcisi oluşturur - Geliştirilmiş versiyon
+     * Kod tekrarını azaltacak şekilde güncellenmiş
      *
      * @param endpointPath Endpoint yolu
      * @param httpMethod HTTP metodu
@@ -641,6 +822,13 @@ public class ClaudeSwaggerTestGenerator2 {
         prompt.append("- Tüm testleri tek bir metod içinde organize et, açıklayıcı yorum bloklarıyla ayır\n");
         prompt.append("- Her endpoint için farklı senaryolar oluştur, kopyala-yapıştır kullanma\n");
 
+        // Kod tekrarını azaltma açıklaması
+        prompt.append("\nKod tekrarını azaltmak için:\n");
+        prompt.append("- Aynı istek için RequestSpecification tekrar tekrar oluşturmak yerine commonRequestSpec() veya authorizedRequestSpec() kullan\n");
+        prompt.append("- Test verisi oluşturmak için createTestData() metodu kullan\n");
+        prompt.append("- Yetkilendirme testlerinde authorizedRequestSpec() kullan\n");
+        prompt.append("- Performans kontrolü için assertResponseTime() metodunu kullan\n");
+
         return prompt.toString();
     }
 
@@ -651,13 +839,14 @@ public class ClaudeSwaggerTestGenerator2 {
      * @throws IOException I/O hatası
      */
     private void writeTestClassHeader(FileWriter writer) throws IOException {
-        writer.write("package org.example;\n\n");
+        writer.write("package tests;\n\n");
 
         // Temel importlar
         writer.write("import io.restassured.RestAssured;\n");
         writer.write("import io.restassured.http.ContentType;\n");
         writer.write("import io.restassured.response.Response;\n");
         writer.write("import io.restassured.specification.RequestSpecification;\n");
+        writer.write("import io.restassured.builder.RequestSpecBuilder;\n");
 
         // JUnit importları
         writer.write("import org.junit.jupiter.api.BeforeAll;\n");
@@ -687,7 +876,15 @@ public class ClaudeSwaggerTestGenerator2 {
         writer.write("import java.util.logging.Logger;\n");
         writer.write("import java.util.Map;\n");
         writer.write("import java.util.HashMap;\n");
-        writer.write("import java.time.Duration;\n\n");
+        writer.write("import java.time.Duration;\n");
+
+        // JSON işleme için import
+        writer.write("import org.json.JSONObject;\n");
+        writer.write("import org.json.JSONArray;\n");
+        writer.write("import org.json.JSONException;\n");
+
+        // JsonSchemaValidator modülü için import
+        writer.write("import static io.restassured.module.jsv.JsonSchemaValidator.*;\n\n");
 
         // JavaDoc ve sınıf tanımı
         writer.write("/**\n");
@@ -706,17 +903,6 @@ public class ClaudeSwaggerTestGenerator2 {
         writer.write("    public static void setup() {\n");
         writer.write("        RestAssured.baseURI = \"" + config.getBaseUri() + "\";\n");
         writer.write("        RestAssured.enableLoggingOfRequestAndResponseIfValidationFails();\n");
-        writer.write("    }\n\n");
-
-        // Ortak yardımcı metodlar
-        writer.write("    /**\n");
-        writer.write("     * API çağrısının performans kontrolü için yardımcı metod\n");
-        writer.write("     */\n");
-        writer.write("    private void assertResponseTime(Response response, long maxAllowedTime) {\n");
-        writer.write("        long responseTime = response.getTime();\n");
-        writer.write("        logger.info(\"Yanıt süresi: \" + responseTime + \" ms\");\n");
-        writer.write("        Assertions.assertTrue(responseTime < maxAllowedTime,\n");
-        writer.write("                \"API yanıt süresi \" + maxAllowedTime + \" ms'den fazla: \" + responseTime + \" ms\");\n");
         writer.write("    }\n\n");
     }
 
@@ -991,12 +1177,13 @@ public class ClaudeSwaggerTestGenerator2 {
         // Hiçbir import kullanmaması ve class tanımlamaması için örnek olumlu pekiştirme
         messages.add(new ChatMessage(ChatMessageRole.ASSISTANT.value(),
                 "Anladım, REST Assured ve JUnit 5 ile test senaryosu oluşturacağım. " +
-                        "Import ifadeleri eklemeyeceğim ve sadece test metodu içeriğini döndüreceğim."));
+                        "Import ifadeleri eklemeyeceğim ve sadece test metodu içeriğini döndüreceğim. " +
+                        "Kod tekrarlarını azaltmak için commonRequestSpec(), createTestData() gibi hazır yardımcı metodlar kullanacağım."));
 
         // Son kullanıcı direktifi ekle
         messages.add(new ChatMessage(ChatMessageRole.USER.value(),
                 "Lütfen test senaryosunu oluştur. Import ifadeleri, sınıf tanımları veya metod imzaları OLMADAN " +
-                        "SADECE metod içeriğini ver. Tüm testleri tek bir metod içinde oluştur."));
+                        "SADECE metod içeriğini ver. Tüm testleri tek bir metod içinde oluştur. Kod tekrarını azaltmak için yardımcı metodları kullan."));
 
         ChatCompletionRequest completionRequest = ChatCompletionRequest.builder()
                 .model(config.getModel())
@@ -1048,8 +1235,8 @@ public class ClaudeSwaggerTestGenerator2 {
         // HTTP metodu için tag ekle
         formattedTestCase.append("    @Tag(\"").append(httpMethod.toLowerCase()).append("\")\n");
 
-        // Metod tanımı başlat
-        formattedTestCase.append("    public void test").append(formatOperationId(operationId)).append("() {\n");
+        // Metod tanımı başlat - sanitize edilmiş operationId kullan
+        formattedTestCase.append("    public void test").append(sanitizeMethodName(operationId)).append("() {\n");
 
         // Yanıtın içeriğini temizle ve ekle
         String cleanedResponse = cleanResponse(response);
@@ -1165,18 +1352,13 @@ public class ClaudeSwaggerTestGenerator2 {
         // 1. Başarılı senaryo
         testCase.append("        // 1. Başarılı veri çekme senaryosu\n");
         testCase.append("        logger.info(\"Başarılı veri çekme testi başlatılıyor\");\n");
-        testCase.append("        Response response = given()\n");
-        testCase.append("            // Gerekli parametreleri buraya ekleyin\n");
+        testCase.append("        Response response = commonRequestSpec()\n");
         testCase.append("            .param(\"page\", 1)\n");
         testCase.append("            .param(\"size\", 10)\n");
-        testCase.append("            .header(\"Accept\", \"application/json\")\n");
-        testCase.append("            .log().ifValidationFails()\n");
         testCase.append("        .when()\n");
         testCase.append("            .get(\"").append(endpoint).append("\")\n");
         testCase.append("        .then()\n");
-        testCase.append("            .log().ifError()\n");
         testCase.append("            .statusCode(200) // Beklenen durum kodu\n");
-        testCase.append("            // Yanıt doğrulama - Şema uyumluluğu\n");
         testCase.append("            .body(\"$\", not(empty()))\n");
         testCase.append("            .extract().response();\n\n");
 
@@ -1184,64 +1366,24 @@ public class ClaudeSwaggerTestGenerator2 {
         testCase.append("        // 2. Performans kontrolü\n");
         testCase.append("        assertResponseTime(response, 5000); // 5 saniye zaman aşımı\n\n");
 
-        // 3. Sayfalandırma testi
-        testCase.append("        // 3. Sayfalandırma testi\n");
-        testCase.append("        Response secondPageResponse = given()\n");
-        testCase.append("            .param(\"page\", 2) // İkinci sayfa\n");
-        testCase.append("            .param(\"size\", 10)\n");
-        testCase.append("            .log().ifValidationFails()\n");
-        testCase.append("        .when()\n");
-        testCase.append("            .get(\"").append(endpoint).append("\")\n");
-        testCase.append("        .then()\n");
-        testCase.append("            .log().ifError()\n");
-        testCase.append("            .statusCode(200)\n");
-        testCase.append("            .extract().response();\n\n");
-
-        testCase.append("        // İlk ve ikinci sayfanın farklı olduğunu kontrol et (varsa)\n");
-        testCase.append("        if (response.jsonPath().getList(\"content\") != null && secondPageResponse.jsonPath().getList(\"content\") != null) {\n");
-        testCase.append("            assertNotEquals(\n");
-        testCase.append("                response.jsonPath().getList(\"content\"),\n");
-        testCase.append("                secondPageResponse.jsonPath().getList(\"content\"),\n");
-        testCase.append("                \"Farklı sayfa numaralarının farklı içerik dönmesi beklenir\"\n");
-        testCase.append("            );\n");
-        testCase.append("        }\n\n");
-
-        // 4. Geçersiz ID testi
-        testCase.append("        // 4. Geçersiz ID ile veri çekme denendiğinde 404 hatası kontrolü\n");
-        testCase.append("        given()\n");
-        testCase.append("            .log().ifValidationFails()\n");
+        // 3. Geçersiz ID testi
+        testCase.append("        // 3. Geçersiz ID ile 404 hatası kontrolü\n");
+        testCase.append("        commonRequestSpec()\n");
         testCase.append("        .when()\n");
         testCase.append("            .get(\"").append(endpoint).append("/99999999\") // Geçersiz ID\n");
         testCase.append("        .then()\n");
-        testCase.append("            .log().ifValidationFails()\n");
-        testCase.append("            .statusCode(404) // Not Found beklenir\n");
-        testCase.append("        ;\n\n");
+        testCase.append("            .statusCode(404); // Not Found beklenir\n\n");
 
-        // 5. Filtreleme testi
-        testCase.append("        // 5. Filtreleme parametreleri testi (varsa)\n");
+        // 4. Yetkilendirme testi
+        testCase.append("        // 4. Yetkilendirme testi\n");
+        testCase.append("        // Authorization header olmadan deneme\n");
         testCase.append("        given()\n");
-        testCase.append("            .param(\"filter\", \"someValue\") // Endpoint'e uygun filtre parametresi\n");
-        testCase.append("            .log().ifValidationFails()\n");
-        testCase.append("        .when()\n");
-        testCase.append("            .get(\"").append(endpoint).append("\")\n");
-        testCase.append("        .then()\n");
-        testCase.append("            .log().ifValidationFails()\n");
-        testCase.append("            .statusCode(200)\n");
-        testCase.append("        ;\n\n");
-
-        // 6. Yetkilendirme testi
-        testCase.append("        // 6. Yetkilendirme testi\n");
-        testCase.append("        // Not: Gerçek uygulamada token veya yetkilendirme başlıklarını kaldırarak test edin\n");
-        testCase.append("        given()\n");
+        testCase.append("            .contentType(ContentType.JSON)\n");
         testCase.append("            // Yetkilendirme başlığı olmadan\n");
-        testCase.append("            // .header(\"Authorization\", \"\")\n");
-        testCase.append("            .log().ifValidationFails()\n");
         testCase.append("        .when()\n");
         testCase.append("            .get(\"").append(endpoint).append("\")\n");
         testCase.append("        .then()\n");
-        testCase.append("            .log().ifValidationFails()\n");
-        testCase.append("            .statusCode(anyOf(is(401), is(403))) // Unauthorized veya Forbidden beklenir\n");
-        testCase.append("        ;\n");
+        testCase.append("            .statusCode(anyOf(is(401), is(403))); // Unauthorized veya Forbidden beklenir\n");
     }
 
     /**
@@ -1254,22 +1396,16 @@ public class ClaudeSwaggerTestGenerator2 {
         // 1. Başarılı oluşturma senaryosu
         testCase.append("        // 1. Başarılı kayıt oluşturma senaryosu\n");
         testCase.append("        logger.info(\"Başarılı kayıt oluşturma testi başlatılıyor\");\n");
-        testCase.append("        String requestBody = \"{\\n\" +\n");
-        testCase.append("            \"    \\\"field1\\\": \\\"value1\\\",\\n\" +\n");
-        testCase.append("            \"    \\\"field2\\\": 123,\\n\" +\n");
-        testCase.append("            \"    \\\"field3\\\": true\\n\" +\n");
-        testCase.append("            \"}\";\n\n");
+        testCase.append("        // Kaynak türüne uygun test verisi oluştur\n");
+        testCase.append("        String requestBody = createTestData(\"resource\");\n\n");
 
-        testCase.append("        Response response = given()\n");
+        testCase.append("        Response response = commonRequestSpec()\n");
         testCase.append("            .contentType(ContentType.JSON)\n");
         testCase.append("            .body(requestBody)\n");
-        testCase.append("            .log().ifValidationFails()\n");
         testCase.append("        .when()\n");
         testCase.append("            .post(\"").append(endpoint).append("\")\n");
         testCase.append("        .then()\n");
-        testCase.append("            .log().ifError()\n");
         testCase.append("            .statusCode(anyOf(is(200), is(201), is(204))) // Beklenen başarı kodları\n");
-        testCase.append("            // Yanıt doğrulama\n");
         testCase.append("            .body(\"id\", notNullValue())\n");
         testCase.append("            .extract().response();\n\n");
 
@@ -1277,86 +1413,28 @@ public class ClaudeSwaggerTestGenerator2 {
         testCase.append("        // 2. Performans kontrolü\n");
         testCase.append("        assertResponseTime(response, 5000); // 5 saniye zaman aşımı\n\n");
 
-        // 3. Zincirleme oluşturulan kaynağı doğrulama
-        testCase.append("        // 3. Oluşturulan kaynağı GET ile doğrulama (zincirleme istek)\n");
-        testCase.append("        // Oluşturulan kaynağın ID'sini al\n");
-        testCase.append("        Integer createdId = response.jsonPath().getInt(\"id\");\n");
-        testCase.append("        // Oluşturulan kaynağı getir ve doğrula\n");
-        testCase.append("        given()\n");
-        testCase.append("            .log().ifValidationFails()\n");
-        testCase.append("        .when()\n");
-        testCase.append("            .get(\"").append(endpoint).append("/\" + createdId)\n");
-        testCase.append("        .then()\n");
-        testCase.append("            .log().ifValidationFails()\n");
-        testCase.append("            .statusCode(200)\n");
-        testCase.append("            .body(\"id\", equalTo(createdId))\n");
-        testCase.append("            .body(\"field1\", equalTo(\"value1\"))\n");
-        testCase.append("        ;\n\n");
+        // 3. Eksik zorunlu alan testi
+        testCase.append("        // 3. Eksik zorunlu alanlar testi\n");
+        testCase.append("        String invalidBody = createInvalidTestData(\"resource\");\n\n");
 
-        // 4. Eksik zorunlu alan testi
-        testCase.append("        // 4. Eksik zorunlu alanlar testi\n");
-        testCase.append("        String invalidBody = \"{\\n\" +\n");
-        testCase.append("            \"    \\\"field2\\\": 123\\n\" +\n"); // field1 eksik
-        testCase.append("            \"}\";\n\n");
-
-        testCase.append("        given()\n");
+        testCase.append("        commonRequestSpec()\n");
         testCase.append("            .contentType(ContentType.JSON)\n");
         testCase.append("            .body(invalidBody)\n");
-        testCase.append("            .log().ifValidationFails()\n");
         testCase.append("        .when()\n");
         testCase.append("            .post(\"").append(endpoint).append("\")\n");
         testCase.append("        .then()\n");
-        testCase.append("            .log().ifValidationFails()\n");
-        testCase.append("            .statusCode(400) // Bad Request beklenir\n");
-        testCase.append("        ;\n\n");
+        testCase.append("            .statusCode(400); // Bad Request beklenir\n\n");
 
-        // 5. Geçersiz format testi
-        testCase.append("        // 5. Geçersiz formatta veri testi\n");
-        testCase.append("        String malformedBody = \"{\\n\" +\n");
-        testCase.append("            \"    \\\"field1\\\": \\\"value1\\\",\\n\" +\n");
-        testCase.append("            \"    \\\"field2\\\": \\\"not_a_number\\\"\\n\" +\n"); // Sayı olması gereken yerde string
-        testCase.append("            \"}\";\n\n");
-
-        testCase.append("        given()\n");
-        testCase.append("            .contentType(ContentType.JSON)\n");
-        testCase.append("            .body(malformedBody)\n");
-        testCase.append("            .log().ifValidationFails()\n");
-        testCase.append("        .when()\n");
-        testCase.append("            .post(\"").append(endpoint).append("\")\n");
-        testCase.append("        .then()\n");
-        testCase.append("            .log().ifValidationFails()\n");
-        testCase.append("            .statusCode(400) // Bad Request beklenir\n");
-        testCase.append("        ;\n\n");
-
-        // 6. Yetkilendirme testi
-        testCase.append("        // 6. Yetkilendirme testi\n");
+        // 4. Yetkilendirme testi
+        testCase.append("        // 4. Yetkilendirme testi\n");
         testCase.append("        given()\n");
         testCase.append("            .contentType(ContentType.JSON)\n");
         testCase.append("            .body(requestBody)\n");
         testCase.append("            // Yetkilendirme başlığı olmadan\n");
-        testCase.append("            // .header(\"Authorization\", \"\")\n");
-        testCase.append("            .log().ifValidationFails()\n");
         testCase.append("        .when()\n");
         testCase.append("            .post(\"").append(endpoint).append("\")\n");
         testCase.append("        .then()\n");
-        testCase.append("            .log().ifValidationFails()\n");
-        testCase.append("            .statusCode(anyOf(is(401), is(403))) // Unauthorized veya Forbidden beklenir\n");
-        testCase.append("        ;\n\n");
-
-        // 7. Duplikasyon testi
-        testCase.append("        // 7. Veri tekrarı kontrolü (aynı veriyle tekrar gönderim)\n");
-        testCase.append("        // Not: Uygulama davranışına göre sonuç değişebilir (409 Conflict veya yeni kayıt)\n");
-        testCase.append("        given()\n");
-        testCase.append("            .contentType(ContentType.JSON)\n");
-        testCase.append("            .body(requestBody) // Aynı veri tekrar gönderiliyor\n");
-        testCase.append("            .log().ifValidationFails()\n");
-        testCase.append("        .when()\n");
-        testCase.append("            .post(\"").append(endpoint).append("\")\n");
-        testCase.append("        .then()\n");
-        testCase.append("            .log().ifValidationFails()\n");
-        testCase.append("            // API tasarımına göre duruma uygun değişim gerekebilir\n");
-        testCase.append("            .statusCode(anyOf(is(409), is(201), is(200))) // Conflict, Created veya OK\n");
-        testCase.append("        ;\n");
+        testCase.append("            .statusCode(anyOf(is(401), is(403))); // Unauthorized veya Forbidden beklenir\n");
     }
 
     /**
@@ -1369,96 +1447,45 @@ public class ClaudeSwaggerTestGenerator2 {
         // 1. Başarılı güncelleme senaryosu
         testCase.append("        // 1. Başarılı güncelleme senaryosu\n");
         testCase.append("        logger.info(\"Başarılı güncelleme testi başlatılıyor\");\n");
-        testCase.append("        // Önce var olan bir kaynağı bulalım veya oluşturalım\n");
-        testCase.append("        // Not: Gerçek uygulamada bu adımı uygun şekilde ayarlayın\n");
-        testCase.append("        Integer resourceId = 1; // Var olduğu bilinen bir kaynak ID'si\n\n");
+        testCase.append("        // Önce var olan bir kaynağı varsayalım\n");
+        testCase.append("        Integer resourceId = 1; // Test için varsayılan ID\n\n");
 
-        testCase.append("        String updateBody = \"{\\n\" +\n");
-        testCase.append("            \"    \\\"id\\\": \" + resourceId + \",\\n\" +\n");
-        testCase.append("            \"    \\\"field1\\\": \\\"updatedValue\\\",\\n\" +\n");
-        testCase.append("            \"    \\\"field2\\\": 456,\\n\" +\n");
-        testCase.append("            \"    \\\"field3\\\": true\\n\" +\n");
-        testCase.append("            \"}\";\n\n");
+        testCase.append("        // Güncelleme için test verisi oluştur\n");
+        testCase.append("        String requestBody = createTestData(\"resource\");\n\n");
 
-        testCase.append("        Response response = given()\n");
+        testCase.append("        Response response = commonRequestSpec()\n");
         testCase.append("            .contentType(ContentType.JSON)\n");
-        testCase.append("            .body(updateBody)\n");
-        testCase.append("            .log().ifValidationFails()\n");
+        testCase.append("            .body(requestBody)\n");
         testCase.append("        .when()\n");
         testCase.append("            .put(\"").append(endpoint).append("/\" + resourceId)\n");
         testCase.append("        .then()\n");
-        testCase.append("            .log().ifError()\n");
         testCase.append("            .statusCode(200) // OK beklenir\n");
-        testCase.append("            // Yanıt doğrulama\n");
-        testCase.append("            .body(\"field1\", equalTo(\"updatedValue\"))\n");
         testCase.append("            .extract().response();\n\n");
 
         // 2. Performans kontrolü
         testCase.append("        // 2. Performans kontrolü\n");
         testCase.append("        assertResponseTime(response, 5000); // 5 saniye zaman aşımı\n\n");
 
-        // 3. Zincirleme güncellenen kaynağı doğrulama
-        testCase.append("        // 3. Güncellenen kaynağı GET ile doğrulama (zincirleme istek)\n");
-        testCase.append("        given()\n");
-        testCase.append("            .log().ifValidationFails()\n");
-        testCase.append("        .when()\n");
-        testCase.append("            .get(\"").append(endpoint).append("/\" + resourceId)\n");
-        testCase.append("        .then()\n");
-        testCase.append("            .log().ifValidationFails()\n");
-        testCase.append("            .statusCode(200)\n");
-        testCase.append("            .body(\"id\", equalTo(resourceId))\n");
-        testCase.append("            .body(\"field1\", equalTo(\"updatedValue\"))\n");
-        testCase.append("        ;\n\n");
-
-        // 4. Geçersiz ID ile güncelleme
-        testCase.append("        // 4. Geçersiz ID ile güncelleme testi\n");
-        testCase.append("        String invalidIdBody = \"{\\n\" +\n");
-        testCase.append("            \"    \\\"id\\\": 99999999,\\n\" +\n");
-        testCase.append("            \"    \\\"field1\\\": \\\"someValue\\\"\\n\" +\n");
-        testCase.append("            \"}\";\n\n");
-
-        testCase.append("        given()\n");
+        // 3. Geçersiz ID ile güncelleme
+        testCase.append("        // 3. Geçersiz ID ile güncelleme testi\n");
+        testCase.append("        commonRequestSpec()\n");
         testCase.append("            .contentType(ContentType.JSON)\n");
-        testCase.append("            .body(invalidIdBody)\n");
-        testCase.append("            .log().ifValidationFails()\n");
+        testCase.append("            .body(requestBody)\n");
         testCase.append("        .when()\n");
         testCase.append("            .put(\"").append(endpoint).append("/99999999\")\n");
         testCase.append("        .then()\n");
-        testCase.append("            .log().ifValidationFails()\n");
-        testCase.append("            .statusCode(404) // Not Found beklenir\n");
-        testCase.append("        ;\n\n");
+        testCase.append("            .statusCode(404); // Not Found beklenir\n\n");
 
-        // 5. Eksik zorunlu alan testi
-        testCase.append("        // 5. Eksik zorunlu alanlar testi\n");
-        testCase.append("        String invalidBody = \"{\\n\" +\n");
-        testCase.append("            \"    \\\"id\\\": \" + resourceId + \"\\n\" +\n"); // Diğer alanlar eksik
-        testCase.append("            \"}\";\n\n");
-
+        // 4. Yetkilendirme testi
+        testCase.append("        // 4. Yetkilendirme testi\n");
         testCase.append("        given()\n");
         testCase.append("            .contentType(ContentType.JSON)\n");
-        testCase.append("            .body(invalidBody)\n");
-        testCase.append("            .log().ifValidationFails()\n");
-        testCase.append("        .when()\n");
-        testCase.append("            .put(\"").append(endpoint).append("/\" + resourceId)\n");
-        testCase.append("        .then()\n");
-        testCase.append("            .log().ifValidationFails()\n");
-        testCase.append("            .statusCode(400) // Bad Request beklenir\n");
-        testCase.append("        ;\n\n");
-
-        // 6. Yetkilendirme testi
-        testCase.append("        // 6. Yetkilendirme testi\n");
-        testCase.append("        given()\n");
-        testCase.append("            .contentType(ContentType.JSON)\n");
-        testCase.append("            .body(updateBody)\n");
+        testCase.append("            .body(requestBody)\n");
         testCase.append("            // Yetkilendirme başlığı olmadan\n");
-        testCase.append("            // .header(\"Authorization\", \"\")\n");
-        testCase.append("            .log().ifValidationFails()\n");
         testCase.append("        .when()\n");
         testCase.append("            .put(\"").append(endpoint).append("/\" + resourceId)\n");
         testCase.append("        .then()\n");
-        testCase.append("            .log().ifValidationFails()\n");
-        testCase.append("            .statusCode(anyOf(is(401), is(403))) // Unauthorized veya Forbidden beklenir\n");
-        testCase.append("        ;\n");
+        testCase.append("            .statusCode(anyOf(is(401), is(403))); // Unauthorized veya Forbidden beklenir\n");
     }
 
     /**
@@ -1471,16 +1498,13 @@ public class ClaudeSwaggerTestGenerator2 {
         // 1. Başarılı silme senaryosu
         testCase.append("        // 1. Başarılı silme senaryosu\n");
         testCase.append("        logger.info(\"Başarılı silme testi başlatılıyor\");\n");
-        testCase.append("        // Önce silinecek bir kaynak oluşturalım veya var olan bir ID kullanalım\n");
-        testCase.append("        // Not: Gerçek uygulamada bu adımı uygun şekilde ayarlayın\n");
-        testCase.append("        Integer resourceId = 1; // Var olduğu bilinen bir kaynak ID'si\n\n");
+        testCase.append("        // Silinecek bir kaynak ID'si\n");
+        testCase.append("        Integer resourceId = 1; // Test için varsayılan ID\n\n");
 
-        testCase.append("        Response response = given()\n");
-        testCase.append("            .log().ifValidationFails()\n");
+        testCase.append("        Response response = commonRequestSpec()\n");
         testCase.append("        .when()\n");
         testCase.append("            .delete(\"").append(endpoint).append("/\" + resourceId)\n");
         testCase.append("        .then()\n");
-        testCase.append("            .log().ifError()\n");
         testCase.append("            .statusCode(anyOf(is(200), is(202), is(204))) // Beklenen başarı kodları\n");
         testCase.append("            .extract().response();\n\n");
 
@@ -1488,54 +1512,22 @@ public class ClaudeSwaggerTestGenerator2 {
         testCase.append("        // 2. Performans kontrolü\n");
         testCase.append("        assertResponseTime(response, 5000); // 5 saniye zaman aşımı\n\n");
 
-        // 3. Silinen kaynağa erişim denemesi
-        testCase.append("        // 3. Silinen kaynağa GET ile erişim denemesi (404 beklenir)\n");
-        testCase.append("        given()\n");
-        testCase.append("            .log().ifValidationFails()\n");
-        testCase.append("        .when()\n");
-        testCase.append("            .get(\"").append(endpoint).append("/\" + resourceId)\n");
-        testCase.append("        .then()\n");
-        testCase.append("            .log().ifValidationFails()\n");
-        testCase.append("            .statusCode(404) // Not Found beklenir\n");
-        testCase.append("        ;\n\n");
-
-        // 4. Geçersiz ID ile silme denemesi
-        testCase.append("        // 4. Geçersiz ID ile silme testi\n");
-        testCase.append("        given()\n");
-        testCase.append("            .log().ifValidationFails()\n");
+        // 3. Geçersiz ID ile silme denemesi
+        testCase.append("        // 3. Geçersiz ID ile silme testi\n");
+        testCase.append("        commonRequestSpec()\n");
         testCase.append("        .when()\n");
         testCase.append("            .delete(\"").append(endpoint).append("/99999999\")\n");
         testCase.append("        .then()\n");
-        testCase.append("            .log().ifValidationFails()\n");
-        testCase.append("            .statusCode(404) // Not Found beklenir\n");
-        testCase.append("        ;\n\n");
+        testCase.append("            .statusCode(404); // Not Found beklenir\n\n");
 
-        // 5. Yetkilendirme testi
-        testCase.append("        // 5. Yetkilendirme testi\n");
+        // 4. Yetkilendirme testi
+        testCase.append("        // 4. Yetkilendirme testi\n");
         testCase.append("        given()\n");
         testCase.append("            // Yetkilendirme başlığı olmadan\n");
-        testCase.append("            // .header(\"Authorization\", \"\")\n");
-        testCase.append("            .log().ifValidationFails()\n");
         testCase.append("        .when()\n");
-        testCase.append("            .delete(\"").append(endpoint).append("/\" + (resourceId + 1))\n");
+        testCase.append("            .delete(\"").append(endpoint).append("/\" + resourceId)\n");
         testCase.append("        .then()\n");
-        testCase.append("            .log().ifValidationFails()\n");
-        testCase.append("            .statusCode(anyOf(is(401), is(403))) // Unauthorized veya Forbidden beklenir\n");
-        testCase.append("        ;\n\n");
-
-        // 6. Bağlantılı kaynaklar üzerinde etkisini kontrol
-        testCase.append("        // 6. Bağlantılı kaynaklara etkisini doğrulama\n");
-        testCase.append("        // Not: Bu test senaryosu, gerçek uygulamanızdaki ilişkisel yapıya göre düzenlenmelidir\n");
-        testCase.append("        given()\n");
-        testCase.append("            .log().ifValidationFails()\n");
-        testCase.append("        .when()\n");
-        testCase.append("            .get(\"").append(endpoint).append("/related/\" + resourceId)\n");
-        testCase.append("        .then()\n");
-        testCase.append("            .log().ifValidationFails()\n");
-        testCase.append("            // API tasarımına göre duruma uygun değişim gerekebilir\n");
-        testCase.append("            // Silinen kaynakla ilişkisi olan verilerin durumu kontrol edilmeli\n");
-        testCase.append("            .statusCode(anyOf(is(404), is(200)))\n");
-        testCase.append("        ;\n");
+        testCase.append("            .statusCode(anyOf(is(401), is(403))); // Unauthorized veya Forbidden beklenir\n");
     }
 
     /**
@@ -1548,88 +1540,47 @@ public class ClaudeSwaggerTestGenerator2 {
         // 1. Başarılı kısmi güncelleme senaryosu
         testCase.append("        // 1. Başarılı kısmi güncelleme senaryosu\n");
         testCase.append("        logger.info(\"Başarılı kısmi güncelleme testi başlatılıyor\");\n");
-        testCase.append("        // Önce var olan bir kaynağı bulalım veya oluşturalım\n");
-        testCase.append("        // Not: Gerçek uygulamada bu adımı uygun şekilde ayarlayın\n");
-        testCase.append("        Integer resourceId = 1; // Var olduğu bilinen bir kaynak ID'si\n\n");
+        testCase.append("        // Güncellenecek bir kaynak ID'si\n");
+        testCase.append("        Integer resourceId = 1; // Test için varsayılan ID\n\n");
 
+        testCase.append("        // Sadece bazı alanlar içeren güncellenmiş veri\n");
         testCase.append("        String patchBody = \"{\\n\" +\n");
-        testCase.append("            \"    \\\"field1\\\": \\\"patchedValue\\\"\\n\" +\n"); // Sadece tek alan güncelleniyor
+        testCase.append("            \"    \\\"name\\\": \\\"Patched Resource Name\\\"\\n\" +\n");
         testCase.append("            \"}\";\n\n");
 
-        testCase.append("        Response response = given()\n");
+        testCase.append("        Response response = commonRequestSpec()\n");
         testCase.append("            .contentType(ContentType.JSON)\n");
         testCase.append("            .body(patchBody)\n");
-        testCase.append("            .log().ifValidationFails()\n");
         testCase.append("        .when()\n");
         testCase.append("            .patch(\"").append(endpoint).append("/\" + resourceId)\n");
         testCase.append("        .then()\n");
-        testCase.append("            .log().ifError()\n");
         testCase.append("            .statusCode(200) // OK beklenir\n");
-        testCase.append("            // Yanıt doğrulama\n");
-        testCase.append("            .body(\"field1\", equalTo(\"patchedValue\"))\n");
         testCase.append("            .extract().response();\n\n");
 
         // 2. Performans kontrolü
         testCase.append("        // 2. Performans kontrolü\n");
         testCase.append("        assertResponseTime(response, 5000); // 5 saniye zaman aşımı\n\n");
 
-        // 3. Zincirleme güncellenen kaynağı doğrulama
-        testCase.append("        // 3. Güncellenen kaynağı GET ile doğrulama (zincirleme istek)\n");
-        testCase.append("        given()\n");
-        testCase.append("            .log().ifValidationFails()\n");
-        testCase.append("        .when()\n");
-        testCase.append("            .get(\"").append(endpoint).append("/\" + resourceId)\n");
-        testCase.append("        .then()\n");
-        testCase.append("            .log().ifValidationFails()\n");
-        testCase.append("            .statusCode(200)\n");
-        testCase.append("            .body(\"id\", equalTo(resourceId))\n");
-        testCase.append("            .body(\"field1\", equalTo(\"patchedValue\"))\n");
-        testCase.append("        ;\n\n");
-
-        // 4. Geçersiz ID ile güncelleme
-        testCase.append("        // 4. Geçersiz ID ile güncelleme testi\n");
-        testCase.append("        given()\n");
+        // 3. Geçersiz ID ile güncelleme
+        testCase.append("        // 3. Geçersiz ID ile güncelleme testi\n");
+        testCase.append("        commonRequestSpec()\n");
         testCase.append("            .contentType(ContentType.JSON)\n");
         testCase.append("            .body(patchBody)\n");
-        testCase.append("            .log().ifValidationFails()\n");
         testCase.append("        .when()\n");
         testCase.append("            .patch(\"").append(endpoint).append("/99999999\")\n");
         testCase.append("        .then()\n");
-        testCase.append("            .log().ifValidationFails()\n");
-        testCase.append("            .statusCode(404) // Not Found beklenir\n");
-        testCase.append("        ;\n\n");
+        testCase.append("            .statusCode(404); // Not Found beklenir\n\n");
 
-        // 5. Geçersiz format testi
-        testCase.append("        // 5. Geçersiz formatta veri testi\n");
-        testCase.append("        String malformedBody = \"{\\n\" +\n");
-        testCase.append("            \"    \\\"field2\\\": \\\"not_a_number\\\"\\n\" +\n"); // Sayı olması gereken yerde string
-        testCase.append("            \"}\";\n\n");
-
-        testCase.append("        given()\n");
-        testCase.append("            .contentType(ContentType.JSON)\n");
-        testCase.append("            .body(malformedBody)\n");
-        testCase.append("            .log().ifValidationFails()\n");
-        testCase.append("        .when()\n");
-        testCase.append("            .patch(\"").append(endpoint).append("/\" + resourceId)\n");
-        testCase.append("        .then()\n");
-        testCase.append("            .log().ifValidationFails()\n");
-        testCase.append("            .statusCode(400) // Bad Request beklenir\n");
-        testCase.append("        ;\n\n");
-
-        // 6. Yetkilendirme testi
-        testCase.append("        // 6. Yetkilendirme testi\n");
+        // 4. Yetkilendirme testi
+        testCase.append("        // 4. Yetkilendirme testi\n");
         testCase.append("        given()\n");
         testCase.append("            .contentType(ContentType.JSON)\n");
         testCase.append("            .body(patchBody)\n");
         testCase.append("            // Yetkilendirme başlığı olmadan\n");
-        testCase.append("            // .header(\"Authorization\", \"\")\n");
-        testCase.append("            .log().ifValidationFails()\n");
         testCase.append("        .when()\n");
         testCase.append("            .patch(\"").append(endpoint).append("/\" + resourceId)\n");
         testCase.append("        .then()\n");
-        testCase.append("            .log().ifValidationFails()\n");
-        testCase.append("            .statusCode(anyOf(is(401), is(403))) // Unauthorized veya Forbidden beklenir\n");
-        testCase.append("        ;\n");
+        testCase.append("            .statusCode(anyOf(is(401), is(403))); // Unauthorized veya Forbidden beklenir\n");
     }
 
     /**
@@ -1641,18 +1592,23 @@ public class ClaudeSwaggerTestGenerator2 {
      */
     private void appendGenericTestTemplate(StringBuilder testCase, String endpoint, String httpMethod) {
         testCase.append("        // ").append(httpMethod.toUpperCase()).append(" metodu için temel test\n");
-        testCase.append("        Response response = given()\n");
-        testCase.append("            // Gerekli parametreleri buraya ekleyin\n");
-        testCase.append("            .log().ifValidationFails()\n");
+        testCase.append("        Response response = commonRequestSpec()\n");
         testCase.append("        .when()\n");
         testCase.append("            .").append(httpMethod.toLowerCase()).append("(\"").append(endpoint).append("\")\n");
         testCase.append("        .then()\n");
-        testCase.append("            .log().ifError()\n");
         testCase.append("            .statusCode(200) // Beklenen durum kodu\n");
         testCase.append("            .extract().response();\n\n");
 
         testCase.append("        // Performans kontrolü\n");
-        testCase.append("        assertResponseTime(response, 5000); // 5 saniye zaman aşımı\n");
+        testCase.append("        assertResponseTime(response, 5000); // 5 saniye zaman aşımı\n\n");
+
+        testCase.append("        // Yetkilendirme testi\n");
+        testCase.append("        given()\n");
+        testCase.append("            // Yetkilendirme başlığı olmadan\n");
+        testCase.append("        .when()\n");
+        testCase.append("            .").append(httpMethod.toLowerCase()).append("(\"").append(endpoint).append("\")\n");
+        testCase.append("        .then()\n");
+        testCase.append("            .statusCode(anyOf(is(401), is(403))); // Unauthorized veya Forbidden beklenir\n");
     }
 
     /**
@@ -1699,37 +1655,69 @@ public class ClaudeSwaggerTestGenerator2 {
     }
 
     /**
-     * Operasyon düğümünden operasyon ID'sini alır
+     * Operasyon düğümünden operasyon ID'sini alır ve geçerli bir Java metod ismine dönüştürür
      *
      * @param operationNode Operasyon düğümü
      * @param httpMethod HTTP metodu
      * @param endpoint Endpoint yolu
      * @return Operasyon ID
      */
-    private String getOperationId(JsonNode operationNode, String httpMethod, String endpoint) {
+    private String getOperationId(JsonNode operationNode, String httpMethod, String endpointPath) {
         if (operationNode.has("operationId")) {
-            return operationNode.get("operationId").asText();
+            // Var olan operationId'deki geçersiz karakterleri temizle
+            return sanitizeMethodName(operationNode.get("operationId").asText());
         }
 
+        // Önerdiğiniz formatta isim oluştur: ResourceMethodType_Endpoint
+        String resource = "";
         if (operationNode.has("tags") && operationNode.get("tags").size() > 0) {
-            return operationNode.get("tags").get(0).asText() + "_" + httpMethod;
-        }
-
-        // Endpoint'ten ID oluştur
-        String[] pathParts = endpoint.split("/");
-        StringBuilder id = new StringBuilder();
-        for (String part : pathParts) {
-            if (!part.isEmpty()) {
-                id.append(part.replace("{", "").replace("}", "")).append("_");
+            resource = operationNode.get("tags").get(0).asText();
+        } else {
+            // Temel kaynağı endpoint'ten çıkar
+            String[] pathParts = endpointPath.split("/");
+            if (pathParts.length > 1) {
+                resource = pathParts[1].replace("{", "").replace("}", "");
             }
         }
 
-        if (id.length() > 0) {
-            id.setLength(id.length() - 1); // Son alt çizgiyi kaldır
-            return id + "_" + httpMethod;
+        // Tire işaretlerini ve diğer geçersiz karakterleri kaldır
+        resource = sanitizeMethodName(resource);
+
+        // Endpoint'i temizleyip formatlı ad haline getir
+        String endpointPart = endpointPath.replace("/", "_").replace("{", "").replace("}", "");
+        if (endpointPart.startsWith("_")) {
+            endpointPart = endpointPart.substring(1);
         }
 
-        return "endpoint_" + httpMethod;
+        // Endpoint kısmındaki tire işaretlerini ve diğer geçersiz karakterleri kaldır
+        endpointPart = sanitizeMethodName(endpointPart);
+
+        return resource + httpMethod.substring(0, 1).toUpperCase() + httpMethod.substring(1) + "_" + endpointPart;
+    }
+
+    /**
+     * Java metod ismi için geçersiz karakterleri temizler
+     *
+     * @param input Temizlenecek girdi
+     * @return Geçerli Java metod ismine dönüştürülmüş string
+     */
+    private String sanitizeMethodName(String input) {
+        if (input == null || input.isEmpty()) {
+            return "unknown";
+        }
+
+        // Tire işaretlerini alt çizgi ile değiştir
+        String result = input.replace('-', '_');
+
+        // Diğer geçersiz karakterleri kaldır (sadece harf, rakam ve alt çizgiye izin ver)
+        result = result.replaceAll("[^a-zA-Z0-9_]", "");
+
+        // Eğer ilk karakter rakamsa önüne alt çizgi ekle
+        if (!result.isEmpty() && Character.isDigit(result.charAt(0))) {
+            result = "_" + result;
+        }
+
+        return result;
     }
 
     /**
@@ -1847,7 +1835,7 @@ public class ClaudeSwaggerTestGenerator2 {
          * Builder sınıfı, yapılandırma oluşturmak için fluent API sunar
          */
         public static class Builder {
-            private String inputFile = "endpoints.json";
+            private String inputFile = "endpoints2.json";
             private String outputFile = DEFAULT_OUTPUT_FILE;
             private String apiKeyEnvVar = "OPENAI_API_KEY";
             private String model = DEFAULT_MODEL;
