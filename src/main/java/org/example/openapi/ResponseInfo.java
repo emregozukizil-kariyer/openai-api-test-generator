@@ -973,10 +973,10 @@ public class ResponseInfo {
                 .withTestId(generateTestId(internalCase))
                 .withTestName(internalCase.getName())
                 .withDescription(internalCase.getDescription())
-                .withScenario(org.example.openapi.TestGenerationScenario.HAPPY_PATH) // Temporary fix
-                .withStrategyType(org.example.openapi.StrategyType.FUNCTIONAL_BASIC) // Temporary fix
-                .withTestSteps(new ArrayList<>()) // Temporary fix
-                .withTestData(new org.example.openapi.TestDataSet()) // Temporary fix
+                .withScenario(mapToTestGenerationScenario(internalCase.getScenario()))
+                .withStrategyType(mapToStrategyType(internalCase.getScenario()))
+                .withTestSteps(generateTestStepsFromResponse(internalCase))
+                .withTestData(generateTestDataFromResponse(internalCase))
                 .withAssertions(generateTestAssertions(internalCase))
                 .withPriority(calculateTestPriority(internalCase))
                 .withEstimatedDuration(estimateTestDuration(internalCase))
@@ -1004,26 +1004,6 @@ public class ResponseInfo {
                 return TestGenerationScenario.LOAD_TESTING_LIGHT;
             default:
                 return TestGenerationScenario.HAPPY_PATH;
-        }
-    }
-
-    private StrategyType mapToStrategyType(ResponseTestScenario scenario) {
-        switch (scenario.getCategory()) {
-            case FUNCTIONAL:
-                return scenario.getComplexity() <= 2 ?
-                        StrategyType.FUNCTIONAL_BASIC : StrategyType.FUNCTIONAL_COMPREHENSIVE;
-            case SECURITY:
-                return scenario.getComplexity() <= 3 ?
-                        StrategyType.SECURITY_BASIC : StrategyType.SECURITY_OWASP_TOP10;
-            case PERFORMANCE:
-                return scenario.getComplexity() <= 2 ?
-                        StrategyType.PERFORMANCE_BASIC : StrategyType.PERFORMANCE_LOAD;
-            case ADVANCED:
-                return StrategyType.ADVANCED_AI_DRIVEN;
-            case SPECIALIZED:
-                return StrategyType.ADVANCED_QUANTUM;
-            default:
-                return StrategyType.FUNCTIONAL_BASIC;
         }
     }
 
@@ -2737,5 +2717,97 @@ public class ResponseInfo {
                     complexityScore, recommendedStrategy, validationResult.isValid()
             );
         }
+    }
+
+    // ===== HELPER METHODS FOR MAPPING =====
+
+    /**
+     * Maps ResponseTestScenario to TestGenerationScenario
+     */
+    private org.example.openapi.TestGenerationScenario mapToTestGenerationScenario(ResponseTestScenario responseScenario) {
+        switch (responseScenario) {
+            case FUNCTIONAL_BASIC:
+                return org.example.openapi.TestGenerationScenario.HAPPY_PATH;
+            case FUNCTIONAL_COMPREHENSIVE:
+                return org.example.openapi.TestGenerationScenario.COMPREHENSIVE_FLOW;
+            case FUNCTIONAL_BOUNDARY:
+                return org.example.openapi.TestGenerationScenario.BOUNDARY_MIN;
+            case FUNCTIONAL_EDGE_CASE:
+                return org.example.openapi.TestGenerationScenario.EDGE_CASES;
+            case SECURITY_BASIC:
+                return org.example.openapi.TestGenerationScenario.SECURITY_AUTHENTICATION;
+            case SECURITY_OWASP_TOP10:
+                return org.example.openapi.TestGenerationScenario.SECURITY_AUTHORIZATION;
+            case SECURITY_INJECTION:
+                return org.example.openapi.TestGenerationScenario.SQL_INJECTION;
+            case SECURITY_XSS:
+                return org.example.openapi.TestGenerationScenario.XSS_STORED;
+            case PERFORMANCE_BASIC:
+                return org.example.openapi.TestGenerationScenario.PERFORMANCE_BASELINE;
+            case PERFORMANCE_LOAD:
+                return org.example.openapi.TestGenerationScenario.LOAD_TESTING;
+            case PERFORMANCE_STRESS:
+                return org.example.openapi.TestGenerationScenario.STRESS_TESTING_CPU;
+            case ADVANCED_AI_DRIVEN:
+                return org.example.openapi.TestGenerationScenario.AI_DRIVEN_EXPLORATION;
+            default:
+                return org.example.openapi.TestGenerationScenario.HAPPY_PATH;
+        }
+    }
+
+    /**
+     * Maps ResponseTestScenario to StrategyType
+     */
+    private org.example.openapi.StrategyType mapToStrategyType(ResponseTestScenario responseScenario) {
+        switch (responseScenario) {
+            case FUNCTIONAL_BASIC:
+                return org.example.openapi.StrategyType.FUNCTIONAL_BASIC;
+            case FUNCTIONAL_COMPREHENSIVE:
+                return org.example.openapi.StrategyType.FUNCTIONAL_COMPREHENSIVE;
+            case FUNCTIONAL_BOUNDARY:
+            case FUNCTIONAL_EDGE_CASE:
+                return org.example.openapi.StrategyType.BOUNDARY_VALUE_ANALYSIS;
+            case SECURITY_BASIC:
+            case SECURITY_OWASP_TOP10:
+            case SECURITY_INJECTION:
+            case SECURITY_XSS:
+                return org.example.openapi.StrategyType.SECURITY_COMPREHENSIVE;
+            case PERFORMANCE_BASIC:
+            case PERFORMANCE_LOAD:
+            case PERFORMANCE_STRESS:
+                return org.example.openapi.StrategyType.PERFORMANCE_COMPREHENSIVE;
+            case ADVANCED_AI_DRIVEN:
+                return org.example.openapi.StrategyType.AI_DRIVEN_EXPLORATION;
+            default:
+                return org.example.openapi.StrategyType.FUNCTIONAL_BASIC;
+        }
+    }
+
+    /**
+     * Generates test steps from ResponseTestCase
+     */
+    private List<org.example.openapi.TestStep> generateTestStepsFromResponse(ResponseTestCase responseCase) {
+        List<org.example.openapi.TestStep> steps = new ArrayList<>();
+        steps.add(new org.example.openapi.TestStep("SETUP", "Prepare test environment for response validation", 1));
+        steps.add(new org.example.openapi.TestStep("EXECUTE", "Execute request and capture response", 2));
+        steps.add(new org.example.openapi.TestStep("VALIDATE_STATUS", "Validate response status code: " + responseCase.getExpectedStatusCode(), 3));
+        steps.add(new org.example.openapi.TestStep("VALIDATE_CONTENT", "Validate response content type: " + responseCase.getExpectedContentType(), 4));
+        steps.add(new org.example.openapi.TestStep("VALIDATE_BODY", "Validate response body content", 5));
+        steps.add(new org.example.openapi.TestStep("CLEANUP", "Clean up test environment", 6));
+        return steps;
+    }
+
+    /**
+     * Generates test data from ResponseTestCase
+     */
+    private org.example.openapi.TestDataSet generateTestDataFromResponse(ResponseTestCase responseCase) {
+        org.example.openapi.TestDataSet testData = new org.example.openapi.TestDataSet();
+        testData.addParameterValue("expectedStatusCode", responseCase.getExpectedStatusCode());
+        testData.addParameterValue("expectedContentType", responseCase.getExpectedContentType());
+        testData.addParameterValue("responseContent", responseCase.getResponseContent());
+        testData.addParameterValue("shouldPass", String.valueOf(responseCase.shouldPass()));
+        testData.addMetadata("scenario", responseCase.getScenario().name());
+        testData.addMetadata("testType", "response_validation");
+        return testData;
     }
 }

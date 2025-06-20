@@ -47,7 +47,15 @@ public enum TestGenerationScenario {
     BOUNDARY_MAX("Maximum boundary testing"),
     NULL_VALUE_HANDLING("Null value handling"),
     AUTHENTICATION_BYPASS("Authentication bypass testing"),
-    STRESS_TESTING_CPU("CPU stress testing");
+    STRESS_TESTING_CPU("CPU stress testing"),
+
+    // Additional enum values needed for ResponseInfo compatibility
+    COMPREHENSIVE_FLOW("Comprehensive flow testing"),
+    SECURITY_AUTHENTICATION("Security authentication testing"),
+    SECURITY_AUTHORIZATION("Security authorization testing"),
+    SQL_INJECTION("SQL injection testing"),
+    PERFORMANCE_BASELINE("Performance baseline testing"),
+    LOAD_TESTING("Load testing");
 
     private final String description;
 

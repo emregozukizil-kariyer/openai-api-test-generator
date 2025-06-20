@@ -24,7 +24,13 @@ public enum StrategyType {
     // Advanced strategies
     ADVANCED_CONCURRENCY("Advanced concurrency testing", "Race conditions and threading", 3),
     ADVANCED_AI_DRIVEN("AI-driven testing", "Machine learning powered test generation", 4), // ADDED
-    ADVANCED_FUZZING("Advanced fuzzing testing", "Automated fuzzing and mutation testing", 4); // ADDED
+    ADVANCED_FUZZING("Advanced fuzzing testing", "Automated fuzzing and mutation testing", 4), // ADDED
+
+    // Additional enum values needed for ResponseInfo compatibility
+    BOUNDARY_VALUE_ANALYSIS("Boundary value analysis", "Systematic boundary value testing", 2),
+    SECURITY_COMPREHENSIVE("Comprehensive security testing", "Complete security test coverage", 3),
+    PERFORMANCE_COMPREHENSIVE("Comprehensive performance testing", "Complete performance test coverage", 3),
+    AI_DRIVEN_EXPLORATION("AI-driven exploration", "AI-powered exploratory testing", 4);
 
     private final String displayName;
     private final String description;
@@ -50,10 +56,12 @@ public enum StrategyType {
             case FUNCTIONAL_BOUNDARY:
             case FUNCTIONAL_COMPREHENSIVE:
             case FUNCTIONAL_EDGE_CASE:
+            case BOUNDARY_VALUE_ANALYSIS:
                 return "FUNCTIONAL";
             case PERFORMANCE_BASIC:
             case PERFORMANCE_STRESS:
             case PERFORMANCE_LOAD:
+            case PERFORMANCE_COMPREHENSIVE:
                 return "PERFORMANCE";
             case SECURITY_INJECTION:
             case SECURITY_XSS:
@@ -62,10 +70,12 @@ public enum StrategyType {
             case SECURITY_PENETRATION:
             case SECURITY_AUTHENTICATION:
             case SECURITY_AUTHORIZATION:
+            case SECURITY_COMPREHENSIVE:
                 return "SECURITY";
             case ADVANCED_CONCURRENCY:
             case ADVANCED_AI_DRIVEN:
             case ADVANCED_FUZZING:
+            case AI_DRIVEN_EXPLORATION:
                 return "ADVANCED";
             default:
                 return "UNKNOWN";
