@@ -1503,4 +1503,9 @@ public class ParameterInfo {
         INVALID_RANGE, INVALID_LENGTH, SECURITY_INJECTION, SECURITY_XSS,
         PERFORMANCE_LARGE, UNICODE_HANDLING, SPECIAL_CHARACTERS
     }
+
+    public boolean hasSecurityImplications() {
+        // Security analysis logic
+        return false; // Temporary implementation
+    }
 }

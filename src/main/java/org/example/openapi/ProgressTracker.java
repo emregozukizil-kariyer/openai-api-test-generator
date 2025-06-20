@@ -64,86 +64,10 @@ public class ProgressTracker {
     /**
      * Standard StrategyType enum - Tutarlılık rehberi uyumlu
      */
-    public enum StrategyType {
-        // FUNCTIONAL
-        FUNCTIONAL_BASIC("Basic functional testing", 1, true, false, false, StrategyCategory.FUNCTIONAL),
-        FUNCTIONAL_COMPREHENSIVE("Comprehensive functional testing", 2, true, false, false, StrategyCategory.FUNCTIONAL),
-        FUNCTIONAL_BOUNDARY("Boundary condition testing", 2, true, false, true, StrategyCategory.FUNCTIONAL),
-        FUNCTIONAL_EDGE_CASE("Edge case testing", 3, true, false, true, StrategyCategory.FUNCTIONAL),
-
-        // SECURITY
-        SECURITY_BASIC("Basic security validation", 2, false, true, false, StrategyCategory.SECURITY),
-        SECURITY_OWASP_TOP10("OWASP Top 10 testing", 4, false, true, true, StrategyCategory.SECURITY),
-        SECURITY_PENETRATION("Penetration testing", 5, false, true, true, StrategyCategory.SECURITY),
-
-        // PERFORMANCE
-        PERFORMANCE_BASIC("Basic performance testing", 2, false, false, true, StrategyCategory.PERFORMANCE),
-        PERFORMANCE_LOAD("Load testing", 3, false, false, true, StrategyCategory.PERFORMANCE),
-
-        // ADVANCED
-        ADVANCED_AI_DRIVEN("AI-driven testing", 5, true, false, true, StrategyCategory.ADVANCED),
-        ADVANCED_QUANTUM("Quantum computing testing", 5, true, true, true, StrategyCategory.SPECIALIZED);
-
-        private final String description;
-        private final int complexity;
-        private final boolean supportsFunctional;
-        private final boolean supportsSecurity;
-        private final boolean requiresAdvancedAnalysis;
-        private final StrategyCategory category;
-
-        StrategyType(String description, int complexity, boolean supportsFunctional,
-                     boolean supportsSecurity, boolean requiresAdvancedAnalysis, StrategyCategory category) {
-            this.description = description;
-            this.complexity = complexity;
-            this.supportsFunctional = supportsFunctional;
-            this.supportsSecurity = supportsSecurity;
-            this.requiresAdvancedAnalysis = requiresAdvancedAnalysis;
-            this.category = category;
-        }
-
-        public String getDescription() { return description; }
-        public int getComplexity() { return complexity; }
-        public boolean supportsFunctional() { return supportsFunctional; }
-        public boolean supportsSecurity() { return supportsSecurity; }
-        public boolean requiresAdvancedAnalysis() { return requiresAdvancedAnalysis; }
-        public StrategyCategory getCategory() { return category; }
-    }
 
     /**
      * Standard TestGenerationScenario enum - Tutarlılık rehberi uyumlu
      */
-    public enum TestGenerationScenario {
-        // FUNCTIONAL
-        HAPPY_PATH("Happy path testing", StrategyType.FUNCTIONAL_BASIC, 1, ScenarioCategory.FUNCTIONAL),
-        ERROR_HANDLING("Error handling testing", StrategyType.FUNCTIONAL_COMPREHENSIVE, 2, ScenarioCategory.FUNCTIONAL),
-        BOUNDARY_VALUES("Boundary value testing", StrategyType.FUNCTIONAL_BOUNDARY, 2, ScenarioCategory.FUNCTIONAL),
-
-        // SECURITY
-        SQL_INJECTION_BASIC("Basic SQL injection testing", StrategyType.SECURITY_BASIC, 3, ScenarioCategory.SECURITY),
-        XSS_REFLECTED("Reflected XSS testing", StrategyType.SECURITY_OWASP_TOP10, 3, ScenarioCategory.SECURITY),
-
-        // PERFORMANCE
-        LOAD_TESTING_LIGHT("Light load testing", StrategyType.PERFORMANCE_LOAD, 2, ScenarioCategory.PERFORMANCE),
-        STRESS_TESTING("Stress testing", StrategyType.PERFORMANCE_LOAD, 4, ScenarioCategory.PERFORMANCE);
-
-        private final String description;
-        private final StrategyType recommendedStrategy;
-        private final int complexity;
-        private final ScenarioCategory category;
-
-        TestGenerationScenario(String description, StrategyType recommendedStrategy,
-                               int complexity, ScenarioCategory category) {
-            this.description = description;
-            this.recommendedStrategy = recommendedStrategy;
-            this.complexity = complexity;
-            this.category = category;
-        }
-
-        public String getDescription() { return description; }
-        public StrategyType getRecommendedStrategy() { return recommendedStrategy; }
-        public int getComplexity() { return complexity; }
-        public ScenarioCategory getCategory() { return category; }
-    }
 
     /**
      * Standard supporting enums
@@ -314,138 +238,7 @@ public class ProgressTracker {
         public void setHasRequestBody(boolean hasRequestBody) { this.hasRequestBody = hasRequestBody; }
     }
 
-    /**
-     * Standard GeneratedTestCase class - Tutarlılık rehberi uyumlu
-     */
-    public static class GeneratedTestCase {
-        private String testId;
-        private String testName;
-        private String description;
-        private TestGenerationScenario scenario;
-        private StrategyType strategyType;
-        private EndpointInfo endpoint;
-        private List<TestStep> testSteps;
-        private TestDataSet testData;
-        private List<TestAssertion> assertions;
-        private int priority;
-        private Duration estimatedDuration;
-        private int complexity;
-        private Set<String> tags;
-        private Instant generationTimestamp;
 
-        private GeneratedTestCase() {}
-
-        // Standard getters
-        public String getTestId() { return testId; }
-        public String getTestName() { return testName; }
-        public String getDescription() { return description; }
-        public TestGenerationScenario getScenario() { return scenario; }
-        public StrategyType getStrategyType() { return strategyType; }
-        public EndpointInfo getEndpoint() { return endpoint; }
-        public List<TestStep> getTestSteps() { return testSteps; }
-        public TestDataSet getTestData() { return testData; }
-        public List<TestAssertion> getAssertions() { return assertions; }
-        public int getPriority() { return priority; }
-        public Duration getEstimatedDuration() { return estimatedDuration; }
-        public int getComplexity() { return complexity; }
-        public Set<String> getTags() { return tags; }
-        public Instant getGenerationTimestamp() { return generationTimestamp; }
-
-        // Builder pattern
-        public static Builder builder() {
-            return new Builder();
-        }
-
-        public static class Builder {
-            private GeneratedTestCase testCase = new GeneratedTestCase();
-
-            public Builder withTestId(String testId) {
-                testCase.testId = testId;
-                return this;
-            }
-
-            public Builder withTestName(String testName) {
-                testCase.testName = testName;
-                return this;
-            }
-
-            public Builder withDescription(String description) {
-                testCase.description = description;
-                return this;
-            }
-
-            public Builder withScenario(TestGenerationScenario scenario) {
-                testCase.scenario = scenario;
-                return this;
-            }
-
-            public Builder withStrategyType(StrategyType strategyType) {
-                testCase.strategyType = strategyType;
-                return this;
-            }
-
-            public Builder withEndpoint(EndpointInfo endpoint) {
-                testCase.endpoint = endpoint;
-                return this;
-            }
-
-            public Builder withTestSteps(List<TestStep> testSteps) {
-                testCase.testSteps = testSteps != null ? new ArrayList<>(testSteps) : new ArrayList<>();
-                return this;
-            }
-
-            public Builder withTestData(TestDataSet testData) {
-                testCase.testData = testData;
-                return this;
-            }
-
-            public Builder withAssertions(List<TestAssertion> assertions) {
-                testCase.assertions = assertions != null ? new ArrayList<>(assertions) : new ArrayList<>();
-                return this;
-            }
-
-            public Builder withPriority(int priority) {
-                testCase.priority = priority;
-                return this;
-            }
-
-            public Builder withEstimatedDuration(Duration estimatedDuration) {
-                testCase.estimatedDuration = estimatedDuration;
-                return this;
-            }
-
-            public Builder withComplexity(int complexity) {
-                testCase.complexity = complexity;
-                return this;
-            }
-
-            public Builder withTags(Set<String> tags) {
-                testCase.tags = tags != null ? new HashSet<>(tags) : new HashSet<>();
-                return this;
-            }
-
-            public GeneratedTestCase build() {
-                // Set defaults
-                if (testCase.testId == null) {
-                    testCase.testId = generateAdvancedExecutionId();
-                }
-                if (testCase.generationTimestamp == null) {
-                    testCase.generationTimestamp = Instant.now();
-                }
-                if (testCase.testSteps == null) {
-                    testCase.testSteps = new ArrayList<>();
-                }
-                if (testCase.assertions == null) {
-                    testCase.assertions = new ArrayList<>();
-                }
-                if (testCase.tags == null) {
-                    testCase.tags = new HashSet<>();
-                }
-
-                return testCase;
-            }
-        }
-    }
 
     /**
      * Standard ComprehensiveTestSuite class - Tutarlılık rehberi uyumlu
@@ -2022,26 +1815,7 @@ public class ProgressTracker {
         public void setActualValue(String actualValue) { this.actualValue = actualValue; }
     }
 
-    // Standard profile classes
-    public static class AdvancedStrategyRecommendation {
-        private StrategyType recommendedStrategy;
-        private List<TestGenerationScenario> scenarios;
-        private double confidenceScore;
 
-        public AdvancedStrategyRecommendation() {}
-        public AdvancedStrategyRecommendation(StrategyType strategy, List<TestGenerationScenario> scenarios, double confidence) {
-            this.recommendedStrategy = strategy;
-            this.scenarios = scenarios != null ? new ArrayList<>(scenarios) : new ArrayList<>();
-            this.confidenceScore = confidence;
-        }
-
-        public StrategyType getRecommendedStrategy() { return recommendedStrategy; }
-        public List<TestGenerationScenario> getScenarios() { return scenarios; }
-        public double getConfidenceScore() { return confidenceScore; }
-        public void setRecommendedStrategy(StrategyType recommendedStrategy) { this.recommendedStrategy = recommendedStrategy; }
-        public void setScenarios(List<TestGenerationScenario> scenarios) { this.scenarios = scenarios; }
-        public void setConfidenceScore(double confidenceScore) { this.confidenceScore = confidenceScore; }
-    }
 
     public static class AdvancedStrategyExecutionPlan {
         private List<String> executionSteps;

@@ -22,6 +22,9 @@ import java.security.MessageDigest;
 import java.nio.charset.StandardCharsets;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import com.sun.management.OperatingSystemMXBean;
 
 /**
  * ENTERPRISE-GRADE INTELLIGENT TEST BUILDER - Tutarlılık Standardına Uygun
@@ -871,7 +874,7 @@ public class TestBuilder {
         }
 
         // 4. Response analysis
-        builder.withResponseAnalysis(analyzeResponses(endpoint.getResponses()));
+        builder.withResponseAnalysis(analyzeResponses(new ArrayList<>(endpoint.getResponses().values())));
 
         // 5. Security considerations
         builder.withSecurityConsiderations(analyzeSecurityConsiderations(endpoint));
@@ -1620,7 +1623,13 @@ public class TestBuilder {
      * Gets current CPU usage (simplified)
      */
     private double getCurrentCpuUsage() {
-        return ManagementFactory.getOperatingSystemMXBean().getProcessCpuLoad();
+        try {
+            com.sun.management.OperatingSystemMXBean osBean = 
+                (com.sun.management.OperatingSystemMXBean) ManagementFactory.getOperatingSystemMXBean();
+            return osBean.getProcessCpuLoad();
+        } catch (Exception e) {
+            return 0.0; // Default value if can't get CPU load
+        }
     }
 
     /**
@@ -2493,245 +2502,12 @@ public class TestBuilder {
 
     // ===== STANDARD RESULT CLASSES (Interface Compliant) =====
 
-    /**
-     * Standard AdvancedStrategyRecommendation class
-     */
-    public static class AdvancedStrategyRecommendation {
-        private final StrategyType recommendedStrategy;
-        private final double confidenceScore;
-        private final String rationale;
-        private final Duration estimatedEffort;
-        private final Object riskAssessment;
-        private final Object performanceConsiderations;
-        private final String executionId;
-        private final Instant generationTimestamp;
 
-        private AdvancedStrategyRecommendation(Builder builder) {
-            this.recommendedStrategy = builder.recommendedStrategy;
-            this.confidenceScore = builder.confidenceScore;
-            this.rationale = builder.rationale;
-            this.estimatedEffort = builder.estimatedEffort;
-            this.riskAssessment = builder.riskAssessment;
-            this.performanceConsiderations = builder.performanceConsiderations;
-            this.executionId = builder.executionId;
-            this.generationTimestamp = builder.generationTimestamp;
-        }
-
-        public StrategyType getRecommendedStrategy() { return recommendedStrategy; }
-        public double getConfidenceScore() { return confidenceScore; }
-        public String getRationale() { return rationale; }
-        public Duration getEstimatedEffort() { return estimatedEffort; }
-        public Object getRiskAssessment() { return riskAssessment; }
-        public Object getPerformanceConsiderations() { return performanceConsiderations; }
-        public String getExecutionId() { return executionId; }
-        public Instant getGenerationTimestamp() { return generationTimestamp; }
-
-        public static Builder builder() { return new Builder(); }
-
-        public static class Builder {
-            private StrategyType recommendedStrategy;
-            private double confidenceScore;
-            private String rationale;
-            private Duration estimatedEffort;
-            private Object riskAssessment;
-            private Object performanceConsiderations;
-            private String executionId;
-            private Instant generationTimestamp;
-
-            public Builder withRecommendedStrategy(StrategyType strategy) { this.recommendedStrategy = strategy; return this; }
-            public Builder withConfidenceScore(double score) { this.confidenceScore = score; return this; }
-            public Builder withRationale(String rationale) { this.rationale = rationale; return this; }
-            public Builder withEstimatedEffort(Duration effort) { this.estimatedEffort = effort; return this; }
-            public Builder withRiskAssessment(Object assessment) { this.riskAssessment = assessment; return this; }
-            public Builder withPerformanceConsiderations(Object considerations) { this.performanceConsiderations = considerations; return this; }
-            public Builder withExecutionId(String executionId) { this.executionId = executionId; return this; }
-            public Builder withGenerationTimestamp(Instant timestamp) { this.generationTimestamp = timestamp; return this; }
-            public AdvancedStrategyRecommendation build() { return new AdvancedStrategyRecommendation(this); }
-        }
-    }
 
     /**
      * Standard AdvancedStrategyExecutionPlan class
      */
-    public static class AdvancedStrategyExecutionPlan {
-        private final List<GeneratedTestCase> testCases;
-        private final List<String> executionOrder;
-        private final String parallelizationStrategy;
-        private final Map<String, Object> resourceRequirements;
-        private final Duration estimatedDuration;
-        private final String executionId;
-        private final Instant generationTimestamp;
 
-        private AdvancedStrategyExecutionPlan(Builder builder) {
-            this.testCases = new ArrayList<>(builder.testCases);
-            this.executionOrder = new ArrayList<>(builder.executionOrder);
-            this.parallelizationStrategy = builder.parallelizationStrategy;
-            this.resourceRequirements = new HashMap<>(builder.resourceRequirements);
-            this.estimatedDuration = builder.estimatedDuration;
-            this.executionId = builder.executionId;
-            this.generationTimestamp = builder.generationTimestamp;
-        }
-
-        public List<GeneratedTestCase> getTestCases() { return new ArrayList<>(testCases); }
-        public List<String> getExecutionOrder() { return new ArrayList<>(executionOrder); }
-        public String getParallelizationStrategy() { return parallelizationStrategy; }
-        public Map<String, Object> getResourceRequirements() { return new HashMap<>(resourceRequirements); }
-        public Duration getEstimatedDuration() { return estimatedDuration; }
-        public String getExecutionId() { return executionId; }
-        public Instant getGenerationTimestamp() { return generationTimestamp; }
-
-        public static Builder builder() { return new Builder(); }
-
-        public static class Builder {
-            private List<GeneratedTestCase> testCases = new ArrayList<>();
-            private List<String> executionOrder = new ArrayList<>();
-            private String parallelizationStrategy;
-            private Map<String, Object> resourceRequirements = new HashMap<>();
-            private Duration estimatedDuration;
-            private String executionId;
-            private Instant generationTimestamp;
-
-            public Builder withTestCases(List<GeneratedTestCase> testCases) { this.testCases = testCases; return this; }
-            public Builder withExecutionOrder(List<String> order) { this.executionOrder = order; return this; }
-            public Builder withParallelizationStrategy(String strategy) { this.parallelizationStrategy = strategy; return this; }
-            public Builder withResourceRequirements(Map<String, Object> requirements) { this.resourceRequirements = requirements; return this; }
-            public Builder withEstimatedDuration(Duration duration) { this.estimatedDuration = duration; return this; }
-            public Builder withExecutionId(String executionId) { this.executionId = executionId; return this; }
-            public Builder withGenerationTimestamp(Instant timestamp) { this.generationTimestamp = timestamp; return this; }
-            public AdvancedStrategyExecutionPlan build() { return new AdvancedStrategyExecutionPlan(this); }
-        }
-    }
-
-    /**
-     * Standard QualityMetrics class
-     */
-    public static class QualityMetrics {
-        private final int totalTests;
-        private final double coverageScore;
-        private final double complexityScore;
-        private final double qualityScore;
-
-        private QualityMetrics(Builder builder) {
-            this.totalTests = builder.totalTests;
-            this.coverageScore = builder.coverageScore;
-            this.complexityScore = builder.complexityScore;
-            this.qualityScore = builder.qualityScore;
-        }
-
-        public int getTotalTests() { return totalTests; }
-        public double getCoverageScore() { return coverageScore; }
-        public double getComplexityScore() { return complexityScore; }
-        public double getQualityScore() { return qualityScore; }
-
-        public static Builder builder() { return new Builder(); }
-
-        public static class Builder {
-            private int totalTests;
-            private double coverageScore;
-            private double complexityScore;
-            private double qualityScore;
-
-            public Builder withTotalTests(int totalTests) { this.totalTests = totalTests; return this; }
-            public Builder withCoverageScore(double score) { this.coverageScore = score; return this; }
-            public Builder withComplexityScore(double score) { this.complexityScore = score; return this; }
-            public Builder withQualityScore(double score) { this.qualityScore = score; return this; }
-            public QualityMetrics build() { return new QualityMetrics(this); }
-        }
-    }
-
-    /**
-     * Standard SecurityProfile class
-     */
-    public static class SecurityProfile {
-        private final int securityTestCount;
-        private final double securityCoverage;
-        private final String riskLevel;
-
-        private SecurityProfile(Builder builder) {
-            this.securityTestCount = builder.securityTestCount;
-            this.securityCoverage = builder.securityCoverage;
-            this.riskLevel = builder.riskLevel;
-        }
-
-        public int getSecurityTestCount() { return securityTestCount; }
-        public double getSecurityCoverage() { return securityCoverage; }
-        public String getRiskLevel() { return riskLevel; }
-
-        public static Builder builder() { return new Builder(); }
-
-        public static class Builder {
-            private int securityTestCount;
-            private double securityCoverage;
-            private String riskLevel;
-
-            public Builder withSecurityTestCount(int count) { this.securityTestCount = count; return this; }
-            public Builder withSecurityCoverage(double coverage) { this.securityCoverage = coverage; return this; }
-            public Builder withRiskLevel(String level) { this.riskLevel = level; return this; }
-            public SecurityProfile build() { return new SecurityProfile(this); }
-        }
-    }
-
-    /**
-     * Standard PerformanceProfile class
-     */
-    public static class PerformanceProfile {
-        private final int performanceTestCount;
-        private final boolean loadTestingEnabled;
-        private final int expectedThroughput;
-
-        private PerformanceProfile(Builder builder) {
-            this.performanceTestCount = builder.performanceTestCount;
-            this.loadTestingEnabled = builder.loadTestingEnabled;
-            this.expectedThroughput = builder.expectedThroughput;
-        }
-
-        public int getPerformanceTestCount() { return performanceTestCount; }
-        public boolean isLoadTestingEnabled() { return loadTestingEnabled; }
-        public int getExpectedThroughput() { return expectedThroughput; }
-
-        public static Builder builder() { return new Builder(); }
-
-        public static class Builder {
-            private int performanceTestCount;
-            private boolean loadTestingEnabled;
-            private int expectedThroughput;
-
-            public Builder withPerformanceTestCount(int count) { this.performanceTestCount = count; return this; }
-            public Builder withLoadTestingEnabled(boolean enabled) { this.loadTestingEnabled = enabled; return this; }
-            public Builder withExpectedThroughput(int throughput) { this.expectedThroughput = throughput; return this; }
-            public PerformanceProfile build() { return new PerformanceProfile(this); }
-        }
-    }
-
-    /**
-     * Standard ComplianceProfile class
-     */
-    public static class ComplianceProfile {
-        private final List<String> complianceStandards;
-        private final double complianceScore;
-
-        private ComplianceProfile(Builder builder) {
-            this.complianceStandards = new ArrayList<>(builder.complianceStandards);
-            this.complianceScore = builder.complianceScore;
-        }
-
-        public List<String> getComplianceStandards() { return new ArrayList<>(complianceStandards); }
-        public double getComplianceScore() { return complianceScore; }
-
-        public static Builder builder() { return new Builder(); }
-
-        public static class Builder {
-            private List<String> complianceStandards = new ArrayList<>();
-            private double complianceScore;
-
-            public Builder withComplianceStandards(List<String> standards) {
-                this.complianceStandards = new ArrayList<>(standards);
-                return this;
-            }
-            public Builder withComplianceScore(double score) { this.complianceScore = score; return this; }
-            public ComplianceProfile build() { return new ComplianceProfile(this); }
-        }
-    }
 
     // ===== STANDARD toString, equals, hashCode =====
 

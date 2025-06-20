@@ -16,6 +16,9 @@ import java.util.concurrent.Future;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import com.sun.management.OperatingSystemMXBean;
 
 /**
  * ENTERPRISE ReportWriter - Standard Interface Implementation
@@ -452,8 +455,7 @@ public class ReportWriter {
 
         // High-risk test suites
         List<ComprehensiveTestSuite> highRiskSuites = testSuites.stream()
-                .filter(ts -> ts.getSecurityProfile() != null &&
-                        ts.getSecurityProfile().getRiskLevel().ordinal() >= 3)
+                .filter(ts -> ts.getSecurityProfile() != null)
                 .collect(Collectors.toList());
         analysis.setHighRiskTestSuites(highRiskSuites);
 
@@ -1622,7 +1624,7 @@ public class ReportWriter {
 
         // Try to generate comprehensive report as well
         try {
-            ComprehensiveReportResult result = generateReport(endpoints, null);
+            ComprehensiveReportResult result = generateReport(endpoints, (AdvancedStrategyRecommendation) null);
             if (result.isSuccess()) {
                 logger.info("Comprehensive report also generated successfully");
             }

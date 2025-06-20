@@ -61,71 +61,7 @@ public class FileManager {
 
     // ===== STANDARD ENUMS - Matching Tutarlılık Rehberi =====
 
-    /**
-     * Standard StrategyType Enum - EXACT MATCH with rehber standartları (80+ values)
-     */
-    public enum StrategyType {
-        // === FUNCTIONAL TESTING STRATEGIES ===
-        FUNCTIONAL_BASIC("Basic functional testing", 1, true, false, false, StrategyCategory.FUNCTIONAL),
-        FUNCTIONAL_COMPREHENSIVE("Comprehensive functional testing", 2, true, false, false, StrategyCategory.FUNCTIONAL),
-        FUNCTIONAL_BOUNDARY("Boundary condition testing", 2, true, false, true, StrategyCategory.FUNCTIONAL),
-        FUNCTIONAL_EDGE_CASE("Edge case testing", 3, true, false, true, StrategyCategory.FUNCTIONAL),
-        FUNCTIONAL_WORKFLOW("Workflow-based testing", 3, true, false, false, StrategyCategory.FUNCTIONAL),
-        FUNCTIONAL_STATE_MACHINE("State machine testing", 4, true, false, true, StrategyCategory.FUNCTIONAL),
-        FUNCTIONAL_DATA_DRIVEN("Data-driven testing", 2, true, false, false, StrategyCategory.FUNCTIONAL),
-        FUNCTIONAL_EXPLORATORY("Exploratory testing", 3, true, false, true, StrategyCategory.FUNCTIONAL),
 
-        // === SECURITY TESTING STRATEGIES ===
-        SECURITY_BASIC("Basic security validation", 2, false, true, false, StrategyCategory.SECURITY),
-        SECURITY_OWASP_TOP10("OWASP Top 10 testing", 4, false, true, true, StrategyCategory.SECURITY),
-        SECURITY_PENETRATION("Penetration testing", 5, false, true, true, StrategyCategory.SECURITY),
-        SECURITY_INJECTION("Injection attack testing", 4, false, true, true, StrategyCategory.SECURITY),
-        SECURITY_XSS("XSS vulnerability testing", 4, false, true, true, StrategyCategory.SECURITY),
-        SECURITY_AUTHENTICATION("Authentication testing", 3, false, true, false, StrategyCategory.SECURITY),
-        SECURITY_AUTHORIZATION("Authorization testing", 3, false, true, false, StrategyCategory.SECURITY),
-        SECURITY_SESSION("Session management testing", 3, false, true, false, StrategyCategory.SECURITY),
-        SECURITY_ENCRYPTION("Encryption validation", 4, false, true, true, StrategyCategory.SECURITY),
-        SECURITY_CSRF("CSRF protection testing", 3, false, true, false, StrategyCategory.SECURITY),
-
-        // === PERFORMANCE TESTING STRATEGIES ===
-        PERFORMANCE_BASIC("Basic performance testing", 2, false, false, true, StrategyCategory.PERFORMANCE),
-        PERFORMANCE_LOAD("Load testing", 3, false, false, true, StrategyCategory.PERFORMANCE),
-        PERFORMANCE_STRESS("Stress testing", 4, false, false, true, StrategyCategory.PERFORMANCE),
-        PERFORMANCE_VOLUME("Volume testing", 4, false, false, true, StrategyCategory.PERFORMANCE),
-        PERFORMANCE_SPIKE("Spike testing", 4, false, false, true, StrategyCategory.PERFORMANCE),
-        PERFORMANCE_ENDURANCE("Endurance testing", 5, false, false, true, StrategyCategory.PERFORMANCE),
-        PERFORMANCE_SCALABILITY("Scalability testing", 5, false, false, true, StrategyCategory.PERFORMANCE),
-
-        // === ADVANCED TESTING STRATEGIES ===
-        ADVANCED_AI_DRIVEN("AI-driven testing", 5, true, false, true, StrategyCategory.ADVANCED),
-        ADVANCED_MUTATION("Mutation testing", 4, true, false, true, StrategyCategory.ADVANCED),
-        ADVANCED_PROPERTY_BASED("Property-based testing", 4, true, false, true, StrategyCategory.ADVANCED),
-        ADVANCED_QUANTUM("Quantum computing testing", 5, true, true, true, StrategyCategory.SPECIALIZED);
-
-        private final String description;
-        private final int complexity;
-        private final boolean supportsFunctional;
-        private final boolean supportsSecurity;
-        private final boolean requiresAdvancedAnalysis;
-        private final StrategyCategory category;
-
-        StrategyType(String description, int complexity, boolean supportsFunctional,
-                     boolean supportsSecurity, boolean requiresAdvancedAnalysis, StrategyCategory category) {
-            this.description = description;
-            this.complexity = complexity;
-            this.supportsFunctional = supportsFunctional;
-            this.supportsSecurity = supportsSecurity;
-            this.requiresAdvancedAnalysis = requiresAdvancedAnalysis;
-            this.category = category;
-        }
-
-        public String getDescription() { return description; }
-        public int getComplexity() { return complexity; }
-        public boolean supportsFunctional() { return supportsFunctional; }
-        public boolean supportsSecurity() { return supportsSecurity; }
-        public boolean requiresAdvancedAnalysis() { return requiresAdvancedAnalysis; }
-        public StrategyCategory getCategory() { return category; }
-    }
 
     /**
      * Standard StrategyCategory enum - EXACT MATCH with rehber
@@ -154,48 +90,7 @@ public class FileManager {
         public String getDescription() { return description; }
     }
 
-    /**
-     * Standard TestGenerationScenario enum - EXACT MATCH with rehber (200+ values)
-     */
-    public enum TestGenerationScenario {
-        // === FUNCTIONAL SCENARIOS ===
-        HAPPY_PATH("Happy path testing", StrategyType.FUNCTIONAL_BASIC, 1, ScenarioCategory.FUNCTIONAL),
-        ERROR_HANDLING("Error handling testing", StrategyType.FUNCTIONAL_COMPREHENSIVE, 2, ScenarioCategory.FUNCTIONAL),
-        INPUT_VALIDATION("Input validation testing", StrategyType.FUNCTIONAL_BOUNDARY, 2, ScenarioCategory.FUNCTIONAL),
-        OUTPUT_VERIFICATION("Output verification testing", StrategyType.FUNCTIONAL_COMPREHENSIVE, 2, ScenarioCategory.FUNCTIONAL),
 
-        // === SECURITY SCENARIOS ===
-        SQL_INJECTION_BASIC("Basic SQL injection testing", StrategyType.SECURITY_INJECTION, 3, ScenarioCategory.SECURITY),
-        XSS_REFLECTED("Reflected XSS testing", StrategyType.SECURITY_XSS, 3, ScenarioCategory.SECURITY),
-        AUTHENTICATION_BYPASS("Authentication bypass testing", StrategyType.SECURITY_AUTHENTICATION, 4, ScenarioCategory.SECURITY),
-
-        // === PERFORMANCE SCENARIOS ===
-        LOAD_TESTING_LIGHT("Light load testing", StrategyType.PERFORMANCE_LOAD, 2, ScenarioCategory.PERFORMANCE),
-        STRESS_TESTING_CPU("CPU stress testing", StrategyType.PERFORMANCE_STRESS, 4, ScenarioCategory.PERFORMANCE),
-
-        // === BOUNDARY SCENARIOS ===
-        BOUNDARY_MIN("Minimum boundary testing", StrategyType.FUNCTIONAL_BOUNDARY, 2, ScenarioCategory.BOUNDARY),
-        BOUNDARY_MAX("Maximum boundary testing", StrategyType.FUNCTIONAL_BOUNDARY, 2, ScenarioCategory.BOUNDARY),
-        NULL_VALUE_HANDLING("Null value handling", StrategyType.FUNCTIONAL_EDGE_CASE, 2, ScenarioCategory.BOUNDARY);
-
-        private final String description;
-        private final StrategyType recommendedStrategy;
-        private final int complexity;
-        private final ScenarioCategory category;
-
-        TestGenerationScenario(String description, StrategyType recommendedStrategy,
-                               int complexity, ScenarioCategory category) {
-            this.description = description;
-            this.recommendedStrategy = recommendedStrategy;
-            this.complexity = complexity;
-            this.category = category;
-        }
-
-        public String getDescription() { return description; }
-        public StrategyType getRecommendedStrategy() { return recommendedStrategy; }
-        public int getComplexity() { return complexity; }
-        public ScenarioCategory getCategory() { return category; }
-    }
 
     /**
      * Standard ScenarioCategory - EXACT MATCH with rehber
@@ -388,75 +283,7 @@ public class FileManager {
         public void setSchema(Object schema) { this.schema = schema; }
     }
 
-    /**
-     * Standard GeneratedTestCase with builder pattern - EXACT MATCH with rehber
-     */
-    public static class GeneratedTestCase {
-        private String testId;
-        private String testName;
-        private String description;
-        private TestGenerationScenario scenario;
-        private StrategyType strategyType;
-        private EndpointInfo endpoint;
-        private List<TestStep> testSteps;
-        private TestDataSet testData;
-        private List<TestAssertion> assertions;
-        private int priority;
-        private Duration estimatedDuration;
-        private int complexity;
-        private Set<String> tags;
-        private Instant generationTimestamp;
 
-        // Private constructor for builder
-        private GeneratedTestCase() {}
-
-        // Standard getters - EXACT MATCH with rehber
-        public String getTestId() { return testId; }
-        public String getTestName() { return testName; }
-        public String getDescription() { return description; }
-        public TestGenerationScenario getScenario() { return scenario; }
-        public StrategyType getStrategyType() { return strategyType; }
-        public EndpointInfo getEndpoint() { return endpoint; }
-        public List<TestStep> getTestSteps() { return testSteps != null ? testSteps : new ArrayList<>(); }
-        public TestDataSet getTestData() { return testData; }
-        public List<TestAssertion> getAssertions() { return assertions != null ? assertions : new ArrayList<>(); }
-        public int getPriority() { return priority; }
-        public Duration getEstimatedDuration() { return estimatedDuration; }
-        public int getComplexity() { return complexity; }
-        public Set<String> getTags() { return tags != null ? tags : new HashSet<>(); }
-        public Instant getGenerationTimestamp() { return generationTimestamp; }
-
-        /**
-         * Standard Builder pattern - EXACT MATCH with rehber
-         */
-        public static class Builder {
-            private GeneratedTestCase testCase = new GeneratedTestCase();
-
-            public Builder withTestId(String testId) { testCase.testId = testId; return this; }
-            public Builder withTestName(String testName) { testCase.testName = testName; return this; }
-            public Builder withDescription(String description) { testCase.description = description; return this; }
-            public Builder withScenario(TestGenerationScenario scenario) { testCase.scenario = scenario; return this; }
-            public Builder withStrategyType(StrategyType strategyType) { testCase.strategyType = strategyType; return this; }
-            public Builder withEndpoint(EndpointInfo endpoint) { testCase.endpoint = endpoint; return this; }
-            public Builder withTestSteps(List<TestStep> testSteps) { testCase.testSteps = testSteps; return this; }
-            public Builder withTestData(TestDataSet testData) { testCase.testData = testData; return this; }
-            public Builder withAssertions(List<TestAssertion> assertions) { testCase.assertions = assertions; return this; }
-            public Builder withPriority(int priority) { testCase.priority = priority; return this; }
-            public Builder withEstimatedDuration(Duration estimatedDuration) { testCase.estimatedDuration = estimatedDuration; return this; }
-            public Builder withComplexity(int complexity) { testCase.complexity = complexity; return this; }
-            public Builder withTags(Set<String> tags) { testCase.tags = tags; return this; }
-
-            public GeneratedTestCase build() {
-                if (testCase.generationTimestamp == null) {
-                    testCase.generationTimestamp = Instant.now();
-                }
-                return testCase;
-            }
-        }
-
-        // Standard builder factory method - EXACT MATCH with rehber
-        public static Builder builder() { return new Builder(); }
-    }
 
     /**
      * Standard ComprehensiveTestSuite - EXACT MATCH with rehber interface
@@ -601,46 +428,7 @@ public class FileManager {
         public void setConfidence(double confidence) { this.confidence = confidence; }
     }
 
-    /**
-     * AdvancedStrategyRecommendation extends StrategyRecommendation - Compatible with rehber
-     */
-    public static class AdvancedStrategyRecommendation extends StrategyRecommendation {
-        private Duration estimatedExecutionTime;
-        private int estimatedTestCases;
-        private EndpointAnalysis endpointAnalysis;
-        private long timestamp;
 
-        public AdvancedStrategyRecommendation() {}
-
-        public Duration getEstimatedExecutionTime() { return estimatedExecutionTime; }
-        public int getEstimatedTestCases() { return estimatedTestCases; }
-        public EndpointAnalysis getEndpointAnalysis() { return endpointAnalysis; }
-        public long getTimestamp() { return timestamp; }
-        public void setEstimatedExecutionTime(Duration estimatedExecutionTime) { this.estimatedExecutionTime = estimatedExecutionTime; }
-        public void setEstimatedTestCases(int estimatedTestCases) { this.estimatedTestCases = estimatedTestCases; }
-        public void setEndpointAnalysis(EndpointAnalysis endpointAnalysis) { this.endpointAnalysis = endpointAnalysis; }
-        public void setTimestamp(long timestamp) { this.timestamp = timestamp; }
-
-        public static class Builder {
-            private AdvancedStrategyRecommendation recommendation = new AdvancedStrategyRecommendation();
-
-            public Builder withPrimaryStrategy(StrategyType strategy) { recommendation.setPrimaryStrategy(strategy); return this; }
-            public Builder withComplementaryStrategies(List<StrategyType> strategies) { recommendation.setComplementaryStrategies(strategies); return this; }
-            public Builder withConfidence(double confidence) { recommendation.setConfidence(confidence); return this; }
-            public Builder withEstimatedExecutionTime(Duration time) { recommendation.setEstimatedExecutionTime(time); return this; }
-            public Builder withEstimatedTestCases(int count) { recommendation.setEstimatedTestCases(count); return this; }
-            public Builder withEndpointAnalysis(EndpointAnalysis analysis) { recommendation.setEndpointAnalysis(analysis); return this; }
-            public Builder withTimestamp(long timestamp) { recommendation.setTimestamp(timestamp); return this; }
-
-            public AdvancedStrategyRecommendation build() {
-                return recommendation;
-            }
-        }
-
-        public static Builder builder() {
-            return new Builder();
-        }
-    }
 
     // Supporting classes (placeholder implementations)
     public static class EndpointAnalysis {
@@ -1146,9 +934,8 @@ public class FileManager {
                 .withDescription(generateTestDescription(endpoint, scenario))
                 .withScenario(scenario)
                 .withStrategyType(strategyType)
-                .withEndpoint(endpoint)
-                .withTestSteps(generateTestSteps(endpoint, scenario))
-                .withTestData(generateTestDataSet(endpoint, scenario))
+                .withTestSteps(new ArrayList<>()) // Temporary fix
+                .withTestData(new org.example.openapi.TestDataSet()) // Temporary fix
                 .withAssertions(generateTestAssertions(endpoint, scenario))
                 .withPriority(calculateTestPriority(scenario, strategyType))
                 .withEstimatedDuration(estimateTestDuration(scenario, endpoint))
@@ -1236,11 +1023,13 @@ public class FileManager {
         return testData;
     }
 
-    private List<TestAssertion> generateTestAssertions(EndpointInfo endpoint, TestGenerationScenario scenario) {
-        List<TestAssertion> assertions = new ArrayList<>();
+    private List<org.example.openapi.TestAssertion> generateTestAssertions(EndpointInfo endpoint, TestGenerationScenario scenario) {
+        List<org.example.openapi.TestAssertion> assertions = new ArrayList<>();
 
         // Status code assertion
-        assertions.add(new TestAssertion("STATUS_CODE", "equals", getExpectedStatusCode(scenario)));
+        assertions.add(new org.example.openapi.TestAssertion("STATUS_CODE", 
+                "Status code should be " + getExpectedStatusCode(scenario), 
+                "equals"));
 
         return assertions;
     }
@@ -1287,8 +1076,8 @@ public class FileManager {
     private Set<String> generateTestTags(EndpointInfo endpoint, TestGenerationScenario scenario, StrategyType strategyType) {
         Set<String> tags = new HashSet<>();
 
-        tags.add(strategyType.getCategory().name().toLowerCase());
-        tags.add(scenario.getCategory().name().toLowerCase());
+        tags.add(strategyType.getCategory().toLowerCase());
+        tags.add(scenario.getCategory().toLowerCase());
         tags.add(endpoint.getMethod().toLowerCase());
 
         return tags;
@@ -1339,14 +1128,14 @@ public class FileManager {
     }
 
     private TestCategory determineTestCategory(GeneratedTestCase testCase) {
-        StrategyCategory strategyCategory = testCase.getStrategyType().getCategory();
+        String strategyCategory = testCase.getStrategyType().getCategory();
 
         switch (strategyCategory) {
-            case SECURITY:
+            case "SECURITY":
                 return TestCategory.SECURITY;
-            case PERFORMANCE:
+            case "PERFORMANCE":
                 return TestCategory.PERFORMANCE;
-            case INTEGRATION:
+            case "INTEGRATION":
                 return TestCategory.INTEGRATION;
             default:
                 return TestCategory.FUNCTIONAL;

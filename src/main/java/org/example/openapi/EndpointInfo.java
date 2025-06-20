@@ -22,105 +22,6 @@ public class EndpointInfo {
     // ===== STANDARD ENUMS - Tutarlılık Rehberi Uyumlu =====
 
     /**
-     * Standard StrategyType enum - Tutarlılık rehberi uyumlu
-     */
-    public enum StrategyType {
-        // FUNCTIONAL
-        FUNCTIONAL_BASIC("Basic functional testing", 1, true, false, false, StrategyCategory.FUNCTIONAL),
-        FUNCTIONAL_COMPREHENSIVE("Comprehensive functional testing", 2, true, false, false, StrategyCategory.FUNCTIONAL),
-        FUNCTIONAL_BOUNDARY("Boundary condition testing", 2, true, false, true, StrategyCategory.FUNCTIONAL),
-        FUNCTIONAL_EDGE_CASE("Edge case testing", 3, true, false, true, StrategyCategory.FUNCTIONAL),
-
-        // SECURITY
-        SECURITY_BASIC("Basic security validation", 2, false, true, false, StrategyCategory.SECURITY),
-        SECURITY_INJECTION("SQL injection testing", 3, false, true, true, StrategyCategory.SECURITY),
-        SECURITY_XSS("XSS testing", 3, false, true, true, StrategyCategory.SECURITY),
-        SECURITY_OWASP_TOP10("OWASP Top 10 testing", 4, false, true, true, StrategyCategory.SECURITY),
-        SECURITY_PENETRATION("Penetration testing", 5, false, true, true, StrategyCategory.SECURITY),
-
-        // PERFORMANCE
-        PERFORMANCE_BASIC("Basic performance testing", 2, false, false, true, StrategyCategory.PERFORMANCE),
-        PERFORMANCE_LOAD("Load testing", 3, false, false, true, StrategyCategory.PERFORMANCE),
-        PERFORMANCE_STRESS("Stress testing", 4, false, false, true, StrategyCategory.PERFORMANCE),
-
-        // ADVANCED
-        ADVANCED_AI_DRIVEN("AI-driven testing", 5, true, false, true, StrategyCategory.ADVANCED),
-        ADVANCED_FUZZING("Fuzzing testing", 4, true, true, true, StrategyCategory.ADVANCED),
-        ADVANCED_CONCURRENCY("Concurrency testing", 4, true, false, true, StrategyCategory.ADVANCED),
-        ADVANCED_QUANTUM("Quantum computing testing", 5, true, true, true, StrategyCategory.SPECIALIZED);
-
-        private final String description;
-        private final int complexity;
-        private final boolean supportsFunctional;
-        private final boolean supportsSecurity;
-        private final boolean requiresAdvancedAnalysis;
-        private final StrategyCategory category;
-
-        StrategyType(String description, int complexity, boolean supportsFunctional,
-                     boolean supportsSecurity, boolean requiresAdvancedAnalysis, StrategyCategory category) {
-            this.description = description;
-            this.complexity = complexity;
-            this.supportsFunctional = supportsFunctional;
-            this.supportsSecurity = supportsSecurity;
-            this.requiresAdvancedAnalysis = requiresAdvancedAnalysis;
-            this.category = category;
-        }
-
-        public String getDescription() { return description; }
-        public int getComplexity() { return complexity; }
-        public boolean supportsFunctional() { return supportsFunctional; }
-        public boolean supportsSecurity() { return supportsSecurity; }
-        public boolean requiresAdvancedAnalysis() { return requiresAdvancedAnalysis; }
-        public StrategyCategory getCategory() { return category; }
-    }
-
-    /**
-     * Standard TestGenerationScenario enum - Tutarlılık rehberi uyumlu
-     */
-    public enum TestGenerationScenario {
-        // FUNCTIONAL
-        HAPPY_PATH("Happy path testing", StrategyType.FUNCTIONAL_BASIC, 1, ScenarioCategory.FUNCTIONAL),
-        ERROR_HANDLING("Error handling testing", StrategyType.FUNCTIONAL_COMPREHENSIVE, 2, ScenarioCategory.FUNCTIONAL),
-        BOUNDARY_VALUES("Boundary value testing", StrategyType.FUNCTIONAL_BOUNDARY, 2, ScenarioCategory.FUNCTIONAL),
-        EDGE_CASES("Edge case testing", StrategyType.FUNCTIONAL_EDGE_CASE, 3, ScenarioCategory.FUNCTIONAL),
-
-        // SECURITY
-        SQL_INJECTION_BASIC("Basic SQL injection testing", StrategyType.SECURITY_INJECTION, 3, ScenarioCategory.SECURITY),
-        XSS_REFLECTED("Reflected XSS testing", StrategyType.SECURITY_XSS, 3, ScenarioCategory.SECURITY),
-        XSS_STORED("Stored XSS testing", StrategyType.SECURITY_XSS, 4, ScenarioCategory.SECURITY),
-        CSRF_PROTECTION("CSRF protection testing", StrategyType.SECURITY_OWASP_TOP10, 3, ScenarioCategory.SECURITY),
-        AUTH_BYPASS("Authentication bypass testing", StrategyType.SECURITY_PENETRATION, 4, ScenarioCategory.SECURITY),
-
-        // PERFORMANCE
-        LOAD_TESTING_LIGHT("Light load testing", StrategyType.PERFORMANCE_LOAD, 2, ScenarioCategory.PERFORMANCE),
-        LOAD_TESTING_HEAVY("Heavy load testing", StrategyType.PERFORMANCE_LOAD, 4, ScenarioCategory.PERFORMANCE),
-        STRESS_TESTING("Stress testing", StrategyType.PERFORMANCE_STRESS, 4, ScenarioCategory.PERFORMANCE),
-
-        // ADVANCED
-        FUZZING_INPUT("Input fuzzing testing", StrategyType.ADVANCED_FUZZING, 4, ScenarioCategory.ADVANCED),
-        CONCURRENCY_RACE_CONDITIONS("Race condition testing", StrategyType.ADVANCED_CONCURRENCY, 4, ScenarioCategory.ADVANCED),
-        AI_DRIVEN_EXPLORATION("AI-driven exploration", StrategyType.ADVANCED_AI_DRIVEN, 5, ScenarioCategory.ADVANCED);
-
-        private final String description;
-        private final StrategyType recommendedStrategy;
-        private final int complexity;
-        private final ScenarioCategory category;
-
-        TestGenerationScenario(String description, StrategyType recommendedStrategy,
-                               int complexity, ScenarioCategory category) {
-            this.description = description;
-            this.recommendedStrategy = recommendedStrategy;
-            this.complexity = complexity;
-            this.category = category;
-        }
-
-        public String getDescription() { return description; }
-        public StrategyType getRecommendedStrategy() { return recommendedStrategy; }
-        public int getComplexity() { return complexity; }
-        public ScenarioCategory getCategory() { return category; }
-    }
-
-    /**
      * Standard supporting enums
      */
     public enum StrategyCategory {
@@ -179,28 +80,6 @@ public class EndpointInfo {
         public int getPriority() { return priority; }
     }
 
-    public enum PerformanceProfile {
-        FAST("Fast response expected", StrategyType.PERFORMANCE_BASIC, TestGenerationScenario.LOAD_TESTING_LIGHT),
-        STANDARD("Standard performance", StrategyType.PERFORMANCE_BASIC, TestGenerationScenario.LOAD_TESTING_LIGHT),
-        SLOW("Slow operations expected", StrategyType.PERFORMANCE_LOAD, TestGenerationScenario.LOAD_TESTING_HEAVY),
-        BATCH("Batch processing", StrategyType.PERFORMANCE_STRESS, TestGenerationScenario.STRESS_TESTING),
-        REAL_TIME("Real-time processing", StrategyType.ADVANCED_CONCURRENCY, TestGenerationScenario.CONCURRENCY_RACE_CONDITIONS);
-
-        private final String description;
-        private final StrategyType recommendedStrategy;
-        private final TestGenerationScenario associatedScenario;
-
-        PerformanceProfile(String description, StrategyType recommendedStrategy, TestGenerationScenario associatedScenario) {
-            this.description = description;
-            this.recommendedStrategy = recommendedStrategy;
-            this.associatedScenario = associatedScenario;
-        }
-
-        public String getDescription() { return description; }
-        public StrategyType getRecommendedStrategy() { return recommendedStrategy; }
-        public TestGenerationScenario getAssociatedScenario() { return associatedScenario; }
-    }
-
     public enum TestCategory {
         FUNCTIONAL("Functional testing", StrategyType.FUNCTIONAL_BASIC, TestGenerationScenario.HAPPY_PATH),
         SECURITY("Security testing", StrategyType.SECURITY_BASIC, TestGenerationScenario.XSS_REFLECTED),
@@ -225,249 +104,6 @@ public class EndpointInfo {
         public String getDescription() { return description; }
         public StrategyType getAssociatedStrategy() { return associatedStrategy; }
         public TestGenerationScenario getDefaultScenario() { return defaultScenario; }
-    }
-
-    // ===== STANDARD DATA CLASSES - Tutarlılık Rehberi Uyumlu =====
-
-    /**
-     * Standard GeneratedTestCase class - Tutarlılık rehberi uyumlu
-     */
-    public static class GeneratedTestCase {
-        private String testId;
-        private String testName;
-        private String description;
-        private TestGenerationScenario scenario;
-        private StrategyType strategyType;
-        private EndpointInfo endpoint;
-        private List<TestStep> testSteps;
-        private TestDataSet testData;
-        private List<TestAssertion> assertions;
-        private int priority;
-        private Duration estimatedDuration;
-        private int complexity;
-        private Set<String> tags;
-        private Instant generationTimestamp;
-
-        private GeneratedTestCase() {}
-
-        // Standard getters
-        public String getTestId() { return testId; }
-        public String getTestName() { return testName; }
-        public String getDescription() { return description; }
-        public TestGenerationScenario getScenario() { return scenario; }
-        public StrategyType getStrategyType() { return strategyType; }
-        public EndpointInfo getEndpoint() { return endpoint; }
-        public List<TestStep> getTestSteps() { return testSteps; }
-        public TestDataSet getTestData() { return testData; }
-        public List<TestAssertion> getAssertions() { return assertions; }
-        public int getPriority() { return priority; }
-        public Duration getEstimatedDuration() { return estimatedDuration; }
-        public int getComplexity() { return complexity; }
-        public Set<String> getTags() { return tags; }
-        public Instant getGenerationTimestamp() { return generationTimestamp; }
-
-        // Builder pattern
-        public static Builder builder() {
-            return new Builder();
-        }
-
-        public static class Builder {
-            private GeneratedTestCase testCase = new GeneratedTestCase();
-
-            public Builder withTestId(String testId) {
-                testCase.testId = testId;
-                return this;
-            }
-
-            public Builder withTestName(String testName) {
-                testCase.testName = testName;
-                return this;
-            }
-
-            public Builder withDescription(String description) {
-                testCase.description = description;
-                return this;
-            }
-
-            public Builder withScenario(TestGenerationScenario scenario) {
-                testCase.scenario = scenario;
-                return this;
-            }
-
-            public Builder withStrategyType(StrategyType strategyType) {
-                testCase.strategyType = strategyType;
-                return this;
-            }
-
-            public Builder withEndpoint(EndpointInfo endpoint) {
-                testCase.endpoint = endpoint;
-                return this;
-            }
-
-            public Builder withTestSteps(List<TestStep> testSteps) {
-                testCase.testSteps = testSteps != null ? new ArrayList<>(testSteps) : new ArrayList<>();
-                return this;
-            }
-
-            public Builder withTestData(TestDataSet testData) {
-                testCase.testData = testData;
-                return this;
-            }
-
-            public Builder withAssertions(List<TestAssertion> assertions) {
-                testCase.assertions = assertions != null ? new ArrayList<>(assertions) : new ArrayList<>();
-                return this;
-            }
-
-            public Builder withPriority(int priority) {
-                testCase.priority = priority;
-                return this;
-            }
-
-            public Builder withEstimatedDuration(Duration estimatedDuration) {
-                testCase.estimatedDuration = estimatedDuration;
-                return this;
-            }
-
-            public Builder withComplexity(int complexity) {
-                testCase.complexity = complexity;
-                return this;
-            }
-
-            public Builder withTags(Set<String> tags) {
-                testCase.tags = tags != null ? new HashSet<>(tags) : new HashSet<>();
-                return this;
-            }
-
-            public GeneratedTestCase build() {
-                // Set defaults
-                if (testCase.testId == null) {
-                    testCase.testId = generateAdvancedExecutionId();
-                }
-                if (testCase.generationTimestamp == null) {
-                    testCase.generationTimestamp = Instant.now();
-                }
-                if (testCase.testSteps == null) {
-                    testCase.testSteps = new ArrayList<>();
-                }
-                if (testCase.assertions == null) {
-                    testCase.assertions = new ArrayList<>();
-                }
-                if (testCase.tags == null) {
-                    testCase.tags = new HashSet<>();
-                }
-
-                return testCase;
-            }
-        }
-    }
-
-    /**
-     * Standard ComprehensiveTestSuite class - Tutarlılık rehberi uyumlu
-     */
-    public static class ComprehensiveTestSuite {
-        private EndpointInfo endpoint;
-        private List<GeneratedTestCase> testCases;
-        private AdvancedStrategyRecommendation recommendation;
-        private AdvancedStrategyExecutionPlan executionPlan;
-        private QualityMetrics qualityMetrics;
-        private SecurityProfile securityProfile;
-        private PerformanceProfile performanceProfile;
-        private ComplianceProfile complianceProfile;
-        private String executionId;
-        private Instant generationTimestamp;
-        private double qualityScore;
-
-        private ComprehensiveTestSuite() {}
-
-        // Standard getters
-        public EndpointInfo getEndpoint() { return endpoint; }
-        public List<GeneratedTestCase> getTestCases() { return testCases; }
-        public AdvancedStrategyRecommendation getRecommendation() { return recommendation; }
-        public AdvancedStrategyExecutionPlan getExecutionPlan() { return executionPlan; }
-        public QualityMetrics getQualityMetrics() { return qualityMetrics; }
-        public SecurityProfile getSecurityProfile() { return securityProfile; }
-        public PerformanceProfile getPerformanceProfile() { return performanceProfile; }
-        public ComplianceProfile getComplianceProfile() { return complianceProfile; }
-        public String getExecutionId() { return executionId; }
-        public Instant getGenerationTimestamp() { return generationTimestamp; }
-        public double getQualityScore() { return qualityScore; }
-
-        public static Builder builder() {
-            return new Builder();
-        }
-
-        public static class Builder {
-            private ComprehensiveTestSuite suite = new ComprehensiveTestSuite();
-
-            public Builder withEndpoint(EndpointInfo endpoint) {
-                suite.endpoint = endpoint;
-                return this;
-            }
-
-            public Builder withTestCases(List<GeneratedTestCase> testCases) {
-                suite.testCases = testCases != null ? new ArrayList<>(testCases) : new ArrayList<>();
-                return this;
-            }
-
-            public Builder withRecommendation(AdvancedStrategyRecommendation recommendation) {
-                suite.recommendation = recommendation;
-                return this;
-            }
-
-            public Builder withExecutionPlan(AdvancedStrategyExecutionPlan executionPlan) {
-                suite.executionPlan = executionPlan;
-                return this;
-            }
-
-            public Builder withQualityMetrics(QualityMetrics qualityMetrics) {
-                suite.qualityMetrics = qualityMetrics;
-                return this;
-            }
-
-            public Builder withSecurityProfile(SecurityProfile securityProfile) {
-                suite.securityProfile = securityProfile;
-                return this;
-            }
-
-            public Builder withPerformanceProfile(PerformanceProfile performanceProfile) {
-                suite.performanceProfile = performanceProfile;
-                return this;
-            }
-
-            public Builder withComplianceProfile(ComplianceProfile complianceProfile) {
-                suite.complianceProfile = complianceProfile;
-                return this;
-            }
-
-            public Builder withExecutionId(String executionId) {
-                suite.executionId = executionId;
-                return this;
-            }
-
-            public Builder withGenerationTimestamp(Instant generationTimestamp) {
-                suite.generationTimestamp = generationTimestamp;
-                return this;
-            }
-
-            public ComprehensiveTestSuite build() {
-                // Set defaults
-                if (suite.executionId == null) {
-                    suite.executionId = generateAdvancedExecutionId();
-                }
-                if (suite.generationTimestamp == null) {
-                    suite.generationTimestamp = Instant.now();
-                }
-                if (suite.testCases == null) {
-                    suite.testCases = new ArrayList<>();
-                }
-
-                // Calculate quality score
-                suite.qualityScore = calculateQualityScore(suite);
-
-                return suite;
-            }
-        }
     }
 
     // ===== CORE ENDPOINT FIELDS =====
@@ -911,7 +547,7 @@ public class EndpointInfo {
     public AdvancedStrategyRecommendation generateAdvancedStrategyRecommendation() {
         return new AdvancedStrategyRecommendation(
                 defaultStrategy,
-                new ArrayList<>(enabledScenarios),
+                new ArrayList<TestGenerationScenario>(enabledScenarios),
                 calculateConfidenceScore()
         );
     }
@@ -928,7 +564,7 @@ public class EndpointInfo {
                 .withEndpoint(this)
                 .withComplexity(scenario.getComplexity())
                 .withPriority(businessCriticality.getPriority())
-                .withTags(Set.of(scenario.getCategory().name().toLowerCase(), method.toLowerCase()))
+                .withTags(Set.of(scenario.getCategory().toLowerCase(), method.toLowerCase()))
                 .build());
 
         return testCases;
@@ -1268,7 +904,7 @@ public class EndpointInfo {
      */
     public Set<StrategyType> getStrategiesForCategory(StrategyCategory category) {
         return enabledStrategies.stream()
-                .filter(strategy -> strategy.getCategory() == category)
+                .filter(strategy -> strategy.getCategory().equals(category.name()))
                 .collect(HashSet::new, HashSet::add, HashSet::addAll);
     }
 
@@ -1277,7 +913,7 @@ public class EndpointInfo {
      */
     public Set<TestGenerationScenario> getScenariosForCategory(ScenarioCategory category) {
         return enabledScenarios.stream()
-                .filter(scenario -> scenario.getCategory() == category)
+                .filter(scenario -> scenario.getCategory().equals(category.name()))
                 .collect(HashSet::new, HashSet::add, HashSet::addAll);
     }
 
@@ -1300,7 +936,7 @@ public class EndpointInfo {
      */
     public double getComplexityScore() {
         return enabledStrategies.stream()
-                .mapToInt(StrategyType::getComplexity)
+                .mapToInt(strategy -> strategy.getComplexity())
                 .average()
                 .orElse(1.0);
     }
@@ -1514,411 +1150,70 @@ public class EndpointInfo {
                 isHighComplexity();
     }
 
-    // ===== SUPPORTING DATA CLASSES =====
+    // ===== ADDITIONAL SETTERS FOR NEW FIELDS =====
 
-    public static class ParameterInfo {
-        private String name;
-        private String type;
-        private String format;
-        private boolean required;
-        private DataConstraints dataConstraints;
-
-        public ParameterInfo() {}
-        public ParameterInfo(String name, String type, boolean required) {
-            this.name = name;
-            this.type = type;
-            this.required = required;
+    public void setHighTraffic(boolean highTraffic) {
+        this.isHighTraffic = highTraffic;
+        if (highTraffic) {
+            recommendedTestCategories.add(TestCategory.LOAD);
+            enabledStrategies.add(StrategyType.PERFORMANCE_LOAD);
+            enabledScenarios.add(TestGenerationScenario.LOAD_TESTING_HEAVY);
         }
-
-        public String getName() { return name; }
-        public String getType() { return type; }
-        public String getFormat() { return format; }
-        public boolean isRequired() { return required; }
-        public DataConstraints getDataConstraints() { return dataConstraints; }
-        public void setName(String name) { this.name = name; }
-        public void setType(String type) { this.type = type; }
-        public void setFormat(String format) { this.format = format; }
-        public void setRequired(boolean required) { this.required = required; }
-        public void setDataConstraints(DataConstraints dataConstraints) { this.dataConstraints = dataConstraints; }
     }
 
-    public static class RequestBodyInfo {
-        private String contentType;
-        private Object schema;
-        private boolean required;
-
-        public RequestBodyInfo() {}
-        public RequestBodyInfo(String contentType, Object schema, boolean required) {
-            this.contentType = contentType;
-            this.schema = schema;
-            this.required = required;
+    public void setComputeIntensive(boolean computeIntensive) {
+        this.isComputeIntensive = computeIntensive;
+        if (computeIntensive) {
+            recommendedTestCategories.add(TestCategory.PERFORMANCE);
+            enabledStrategies.add(StrategyType.PERFORMANCE_STRESS);
+            enabledScenarios.add(TestGenerationScenario.STRESS_TESTING);
         }
-
-        public String getContentType() { return contentType; }
-        public Object getSchema() { return schema; }
-        public boolean isRequired() { return required; }
-        public void setContentType(String contentType) { this.contentType = contentType; }
-        public void setSchema(Object schema) { this.schema = schema; }
-        public void setRequired(boolean required) { this.required = required; }
     }
 
-    public static class ResponseInfo {
-        private String description;
-        private String contentType;
-        private Object schema;
-
-        public ResponseInfo() {}
-        public ResponseInfo(String description, String contentType, Object schema) {
-            this.description = description;
-            this.contentType = contentType;
-            this.schema = schema;
+    public void setAsyncOperation(boolean asyncOperation) {
+        this.isAsyncOperation = asyncOperation;
+        if (asyncOperation) {
+            recommendedTestCategories.add(TestCategory.INTEGRATION);
+            enabledStrategies.add(StrategyType.ADVANCED_CONCURRENCY);
+            enabledScenarios.add(TestGenerationScenario.CONCURRENCY_RACE_CONDITIONS);
         }
-
-        public String getDescription() { return description; }
-        public String getContentType() { return contentType; }
-        public Object getSchema() { return schema; }
-        public void setDescription(String description) { this.description = description; }
-        public void setContentType(String contentType) { this.contentType = contentType; }
-        public void setSchema(Object schema) { this.schema = schema; }
     }
 
-    public static class TestStep {
-        private String stepName;
-        private String action;
-        private Map<String, Object> parameters;
-
-        public TestStep() {}
-        public TestStep(String stepName, String action, Map<String, Object> parameters) {
-            this.stepName = stepName;
-            this.action = action;
-            this.parameters = parameters != null ? new HashMap<>(parameters) : new HashMap<>();
+    public void setHasBulkOperations(boolean hasBulkOperations) {
+        this.hasBulkOperations = hasBulkOperations;
+        if (hasBulkOperations) {
+            recommendedTestCategories.add(TestCategory.PERFORMANCE);
+            this.isComputeIntensive = true;
+            enabledStrategies.add(StrategyType.PERFORMANCE_STRESS);
         }
-
-        public String getStepName() { return stepName; }
-        public String getAction() { return action; }
-        public Map<String, Object> getParameters() { return parameters; }
-        public void setStepName(String stepName) { this.stepName = stepName; }
-        public void setAction(String action) { this.action = action; }
-        public void setParameters(Map<String, Object> parameters) { this.parameters = parameters; }
     }
 
-    public static class TestDataSet {
-        private Map<String, Object> inputData;
-        private Map<String, Object> expectedOutputs;
-
-        public TestDataSet() {
-            this.inputData = new HashMap<>();
-            this.expectedOutputs = new HashMap<>();
-        }
-
-        public TestDataSet(Map<String, Object> inputData, Map<String, Object> expectedOutputs) {
-            this.inputData = inputData != null ? new HashMap<>(inputData) : new HashMap<>();
-            this.expectedOutputs = expectedOutputs != null ? new HashMap<>(expectedOutputs) : new HashMap<>();
-        }
-
-        public Map<String, Object> getInputData() { return inputData; }
-        public Map<String, Object> getExpectedOutputs() { return expectedOutputs; }
-        public void setInputData(Map<String, Object> inputData) { this.inputData = inputData; }
-        public void setExpectedOutputs(Map<String, Object> expectedOutputs) { this.expectedOutputs = expectedOutputs; }
+    public void addExternalApi(String apiName) {
+        this.externalApis.add(apiName);
+        this.hasExternalDependencies = true;
+        this.recommendedTestCategories.add(TestCategory.INTEGRATION);
+        this.enabledStrategies.add(StrategyType.FUNCTIONAL_COMPREHENSIVE);
     }
 
-    public static class TestAssertion {
-        private String assertionType;
-        private String expectedValue;
-        private String actualValue;
-
-        public TestAssertion() {}
-        public TestAssertion(String assertionType, String expectedValue, String actualValue) {
-            this.assertionType = assertionType;
-            this.expectedValue = expectedValue;
-            this.actualValue = actualValue;
-        }
-
-        public String getAssertionType() { return assertionType; }
-        public String getExpectedValue() { return expectedValue; }
-        public String getActualValue() { return actualValue; }
-        public void setAssertionType(String assertionType) { this.assertionType = assertionType; }
-        public void setExpectedValue(String expectedValue) { this.expectedValue = expectedValue; }
-        public void setActualValue(String actualValue) { this.actualValue = actualValue; }
+    public void addDatabaseTable(String tableName) {
+        this.databaseTables.add(tableName);
     }
 
-    // Standard profile classes
-    public static class AdvancedStrategyRecommendation {
-        private StrategyType recommendedStrategy;
-        private List<TestGenerationScenario> scenarios;
-        private double confidenceScore;
-
-        public AdvancedStrategyRecommendation() {}
-        public AdvancedStrategyRecommendation(StrategyType strategy, List<TestGenerationScenario> scenarios, double confidence) {
-            this.recommendedStrategy = strategy;
-            this.scenarios = scenarios != null ? new ArrayList<>(scenarios) : new ArrayList<>();
-            this.confidenceScore = confidence;
-        }
-
-        public StrategyType getRecommendedStrategy() { return recommendedStrategy; }
-        public List<TestGenerationScenario> getScenarios() { return scenarios; }
-        public double getConfidenceScore() { return confidenceScore; }
-        public void setRecommendedStrategy(StrategyType recommendedStrategy) { this.recommendedStrategy = recommendedStrategy; }
-        public void setScenarios(List<TestGenerationScenario> scenarios) { this.scenarios = scenarios; }
-        public void setConfidenceScore(double confidenceScore) { this.confidenceScore = confidenceScore; }
+    public void addRelatedEndpoint(String endpointPath) {
+        this.relatedEndpoints.add(endpointPath);
     }
 
-    public static class AdvancedStrategyExecutionPlan {
-        private List<String> executionSteps;
-        private Duration estimatedDuration;
-        private int priority;
-
-        public AdvancedStrategyExecutionPlan() {
-            this.executionSteps = new ArrayList<>();
-        }
-
-        public List<String> getExecutionSteps() { return executionSteps; }
-        public Duration getEstimatedDuration() { return estimatedDuration; }
-        public int getPriority() { return priority; }
-        public void setExecutionSteps(List<String> executionSteps) { this.executionSteps = executionSteps; }
-        public void setEstimatedDuration(Duration estimatedDuration) { this.estimatedDuration = estimatedDuration; }
-        public void setPriority(int priority) { this.priority = priority; }
+    public void addExample(String example) {
+        this.examples.add(example);
     }
 
-    public static class QualityMetrics {
-        private double coverageScore;
-        private double complexityScore;
-        private double reliabilityScore;
-
-        public QualityMetrics() {}
-        public QualityMetrics(double coverage, double complexity, double reliability) {
-            this.coverageScore = coverage;
-            this.complexityScore = complexity;
-            this.reliabilityScore = reliability;
-        }
-
-        public double getCoverageScore() { return coverageScore; }
-        public double getComplexityScore() { return complexityScore; }
-        public double getReliabilityScore() { return reliabilityScore; }
-        public void setCoverageScore(double coverageScore) { this.coverageScore = coverageScore; }
-        public void setComplexityScore(double complexityScore) { this.complexityScore = complexityScore; }
-        public void setReliabilityScore(double reliabilityScore) { this.reliabilityScore = reliabilityScore; }
+    public void addExtension(String key, String value) {
+        this.extensions.put(key, value);
     }
 
-    public static class SecurityProfile {
-        private List<String> securityTests;
-        private double vulnerabilityScore;
-
-        public SecurityProfile() {
-            this.securityTests = new ArrayList<>();
-        }
-
-        public List<String> getSecurityTests() { return securityTests; }
-        public double getVulnerabilityScore() { return vulnerabilityScore; }
-        public void setSecurityTests(List<String> securityTests) { this.securityTests = securityTests; }
-        public void setVulnerabilityScore(double vulnerabilityScore) { this.vulnerabilityScore = vulnerabilityScore; }
-    }
-
-    public static class PerformanceProfile {
-        private Duration expectedResponseTime;
-        private int expectedThroughput;
-
-        public PerformanceProfile() {}
-        public PerformanceProfile(Duration responseTime, int throughput) {
-            this.expectedResponseTime = responseTime;
-            this.expectedThroughput = throughput;
-        }
-
-        public Duration getExpectedResponseTime() { return expectedResponseTime; }
-        public int getExpectedThroughput() { return expectedThroughput; }
-        public void setExpectedResponseTime(Duration expectedResponseTime) { this.expectedResponseTime = expectedResponseTime; }
-        public void setExpectedThroughput(int expectedThroughput) { this.expectedThroughput = expectedThroughput; }
-    }
-
-    public static class ComplianceProfile {
-        private List<String> complianceStandards;
-        private double complianceScore;
-
-        public ComplianceProfile() {
-            this.complianceStandards = new ArrayList<>();
-        }
-
-        public List<String> getComplianceStandards() { return complianceStandards; }
-        public double getComplianceScore() { return complianceScore; }
-        public void setComplianceStandards(List<String> complianceStandards) { this.complianceStandards = complianceStandards; }
-        public void setComplianceScore(double complianceScore) { this.complianceScore = complianceScore; }
-    }
-
-    public static class DataConstraints {
-        private String type;
-        private String pattern;
-        private BigDecimal minimum;
-        private BigDecimal maximum;
-        private Integer minProperties;
-        private Integer maxProperties;
-        private List<Object> enumValues;
-
-        public DataConstraints() {}
-
-        public String getType() { return type; }
-        public String getPattern() { return pattern; }
-        public BigDecimal getMinimum() { return minimum; }
-        public BigDecimal getMaximum() { return maximum; }
-        public Integer getMinProperties() { return minProperties; }
-        public Integer getMaxProperties() { return maxProperties; }
-        public List<Object> getEnumValues() { return enumValues; }
-
-        public void setType(String type) { this.type = type; }
-        public void setPattern(String pattern) { this.pattern = pattern; }
-        public void setMinimum(BigDecimal minimum) { this.minimum = minimum; }
-        public void setMaximum(BigDecimal maximum) { this.maximum = maximum; }
-        public void setMinProperties(Integer minProperties) { this.minProperties = minProperties; }
-        public void setMaxProperties(Integer maxProperties) { this.maxProperties = maxProperties; }
-        public void setEnumValues(List<Object> enumValues) { this.enumValues = enumValues; }
-    }
-
-    private static double calculateQualityScore(ComprehensiveTestSuite suite) {
-        if (suite.getTestCases() == null || suite.getTestCases().isEmpty()) {
-            return 0.0;
-        }
-
-        double baseScore = 0.5;
-        double complexityBonus = suite.getTestCases().stream()
-                .mapToInt(GeneratedTestCase::getComplexity)
-                .average()
-                .orElse(1.0) / 10.0;
-
-        double coverageBonus = Math.min(suite.getTestCases().size() / 10.0, 0.3);
-
-        return Math.min(1.0, baseScore + complexityBonus + coverageBonus);
-    }
-
-    // ===== INNER CLASSES =====
-
-    /**
-     * Test generation ipuçları ve stratejileri
-     */
-    public static class TestGenerationHints {
-        private Set<String> criticalParameters = new HashSet<>();
-        private Set<String> securitySensitiveFields = new HashSet<>();
-        private Map<String, String> testDataSuggestions = new HashMap<>();
-        private List<String> edgeCaseScenarios = new ArrayList<>();
-        private Map<String, Integer> parameterTestPriority = new HashMap<>();
-        private Set<String> performanceCriticalPaths = new HashSet<>();
-
-        public void updateFromEndpoint(EndpointInfo endpoint) {
-            // Critical parameters (required + complex)
-            for (ParameterInfo param : endpoint.getParameters()) {
-                if (param.isRequired()) {
-                    criticalParameters.add(param.getName());
-                    parameterTestPriority.put(param.getName(), 3); // High priority
-                }
-
-                if (endpoint.isPersonalDataField(param.getName())) {
-                    securitySensitiveFields.add(param.getName());
-                    parameterTestPriority.put(param.getName(), 4); // Very high priority
-                }
-
-                // Test data suggestions
-                generateTestDataSuggestions(param);
-            }
-
-            // Edge case scenarios based on endpoint characteristics
-            generateEdgeCaseScenarios(endpoint);
-
-            // Performance critical paths
-            if (endpoint.isHighTraffic || endpoint.isComputeIntensive) {
-                performanceCriticalPaths.add(endpoint.getPath());
-            }
-        }
-
-        private void generateTestDataSuggestions(ParameterInfo param) {
-            String paramName = param.getName().toLowerCase();
-
-            if (paramName.contains("email")) {
-                testDataSuggestions.put(param.getName(), "test@example.com,invalid-email,test@,@domain.com");
-            } else if (paramName.contains("phone")) {
-                testDataSuggestions.put(param.getName(), "+1234567890,123-456-7890,invalid-phone,1234");
-            } else if (paramName.contains("id") && "integer".equals(param.getType())) {
-                testDataSuggestions.put(param.getName(), "1,999999,-1,0,abc,null");
-            } else if (paramName.contains("name")) {
-                testDataSuggestions.put(param.getName(), "John Doe,A,VeryLongNameThatExceedsNormalLimits,@#$%,null");
-            } else if (paramName.contains("date")) {
-                testDataSuggestions.put(param.getName(), "2023-01-01,invalid-date,2023-13-01,1900-01-01,2100-12-31");
-            } else if (paramName.contains("amount") || paramName.contains("price")) {
-                testDataSuggestions.put(param.getName(), "100.00,0.01,999999.99,-100,0,abc");
-            } else if ("string".equals(param.getType())) {
-                testDataSuggestions.put(param.getName(), "normal,\"\",null,<script>,very-long-string-that-exceeds-limits");
-            }
-        }
-
-        private void generateEdgeCaseScenarios(EndpointInfo endpoint) {
-            edgeCaseScenarios.clear();
-
-            // Authentication edge cases
-            if (endpoint.isRequiresAuthentication()) {
-                edgeCaseScenarios.add("expired_token");
-                edgeCaseScenarios.add("invalid_token");
-                edgeCaseScenarios.add("missing_token");
-                edgeCaseScenarios.add("malformed_token");
-            }
-
-            // Authorization edge cases
-            if (endpoint.requiresAuthorization()) {
-                edgeCaseScenarios.add("insufficient_permissions");
-                edgeCaseScenarios.add("role_mismatch");
-                edgeCaseScenarios.add("access_denied");
-            }
-
-            // Data modification edge cases
-            if (endpoint.isDataModifying()) {
-                edgeCaseScenarios.add("concurrent_modification");
-                edgeCaseScenarios.add("data_conflict");
-                edgeCaseScenarios.add("partial_update");
-                edgeCaseScenarios.add("rollback_scenario");
-            }
-
-            // File upload edge cases
-            if (endpoint.hasFileUpload) {
-                edgeCaseScenarios.add("large_file_upload");
-                edgeCaseScenarios.add("invalid_file_type");
-                edgeCaseScenarios.add("empty_file");
-                edgeCaseScenarios.add("malicious_file");
-            }
-
-            // Performance edge cases
-            if (endpoint.isHighTraffic) {
-                edgeCaseScenarios.add("high_concurrency");
-                edgeCaseScenarios.add("rate_limit_exceeded");
-                edgeCaseScenarios.add("timeout_scenario");
-            }
-
-            // External dependency edge cases
-            if (endpoint.hasExternalDependencies) {
-                edgeCaseScenarios.add("external_service_down");
-                edgeCaseScenarios.add("external_service_timeout");
-                edgeCaseScenarios.add("partial_external_failure");
-            }
-        }
-
-        // Getters
-        public Set<String> getCriticalParameters() { return new HashSet<>(criticalParameters); }
-        public Set<String> getSecuritySensitiveFields() { return new HashSet<>(securitySensitiveFields); }
-        public Map<String, String> getTestDataSuggestions() { return new HashMap<>(testDataSuggestions); }
-        public List<String> getEdgeCaseScenarios() { return new ArrayList<>(edgeCaseScenarios); }
-        public Map<String, Integer> getParameterTestPriority() { return new HashMap<>(parameterTestPriority); }
-        public Set<String> getPerformanceCriticalPaths() { return new HashSet<>(performanceCriticalPaths); }
-
-        public int getParameterPriority(String parameterName) {
-            return parameterTestPriority.getOrDefault(parameterName, 1); // Default low priority
-        }
-
-        public boolean isCriticalParameter(String parameterName) {
-            return criticalParameters.contains(parameterName);
-        }
-
-        public boolean isSecuritySensitive(String parameterName) {
-            return securitySensitiveFields.contains(parameterName);
-        }
-
-        public String getTestDataSuggestion(String parameterName) {
-            return testDataSuggestions.get(parameterName);
-        }
+    public List<String> getExpectedStatusCodes() {
+        // Return list of expected status codes from responses
+        return new ArrayList<>(responses.keySet());
     }
 
     // ===== toString, equals, hashCode =====
@@ -2026,66 +1321,5 @@ public class EndpointInfo {
 
         endpoint.setHighTraffic(true);
         return endpoint;
-    }
-
-    // ===== ADDITIONAL SETTERS FOR NEW FIELDS =====
-
-    public void setHighTraffic(boolean highTraffic) {
-        this.isHighTraffic = highTraffic;
-        if (highTraffic) {
-            recommendedTestCategories.add(TestCategory.LOAD);
-            enabledStrategies.add(StrategyType.PERFORMANCE_LOAD);
-            enabledScenarios.add(TestGenerationScenario.LOAD_TESTING_HEAVY);
-        }
-    }
-
-    public void setComputeIntensive(boolean computeIntensive) {
-        this.isComputeIntensive = computeIntensive;
-        if (computeIntensive) {
-            recommendedTestCategories.add(TestCategory.PERFORMANCE);
-            enabledStrategies.add(StrategyType.PERFORMANCE_STRESS);
-            enabledScenarios.add(TestGenerationScenario.STRESS_TESTING);
-        }
-    }
-
-    public void setAsyncOperation(boolean asyncOperation) {
-        this.isAsyncOperation = asyncOperation;
-        if (asyncOperation) {
-            recommendedTestCategories.add(TestCategory.INTEGRATION);
-            enabledStrategies.add(StrategyType.ADVANCED_CONCURRENCY);
-            enabledScenarios.add(TestGenerationScenario.CONCURRENCY_RACE_CONDITIONS);
-        }
-    }
-
-    public void setHasBulkOperations(boolean hasBulkOperations) {
-        this.hasBulkOperations = hasBulkOperations;
-        if (hasBulkOperations) {
-            recommendedTestCategories.add(TestCategory.PERFORMANCE);
-            this.isComputeIntensive = true;
-            enabledStrategies.add(StrategyType.PERFORMANCE_STRESS);
-        }
-    }
-
-    public void addExternalApi(String apiName) {
-        this.externalApis.add(apiName);
-        this.hasExternalDependencies = true;
-        this.recommendedTestCategories.add(TestCategory.INTEGRATION);
-        this.enabledStrategies.add(StrategyType.FUNCTIONAL_COMPREHENSIVE);
-    }
-
-    public void addDatabaseTable(String tableName) {
-        this.databaseTables.add(tableName);
-    }
-
-    public void addRelatedEndpoint(String endpointPath) {
-        this.relatedEndpoints.add(endpointPath);
-    }
-
-    public void addExample(String example) {
-        this.examples.add(example);
-    }
-
-    public void addExtension(String key, String value) {
-        this.extensions.put(key, value);
     }
 }

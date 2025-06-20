@@ -37,71 +37,7 @@ public class TestStrategyManager {
 
     // ===== STANDARD ENUMS - EXACT MATCH with Tutarlılık Rehberi =====
 
-    /**
-     * Standard StrategyType Enum - EXACT MATCH with rehber standartları (80+ values)
-     */
-    public enum StrategyType {
-        // === FUNCTIONAL TESTING STRATEGIES ===
-        FUNCTIONAL_BASIC("Basic functional testing", 1, true, false, false, StrategyCategory.FUNCTIONAL),
-        FUNCTIONAL_COMPREHENSIVE("Comprehensive functional testing", 2, true, false, false, StrategyCategory.FUNCTIONAL),
-        FUNCTIONAL_BOUNDARY("Boundary condition testing", 2, true, false, true, StrategyCategory.FUNCTIONAL),
-        FUNCTIONAL_EDGE_CASE("Edge case testing", 3, true, false, true, StrategyCategory.FUNCTIONAL),
-        FUNCTIONAL_WORKFLOW("Workflow-based testing", 3, true, false, false, StrategyCategory.FUNCTIONAL),
-        FUNCTIONAL_STATE_MACHINE("State machine testing", 4, true, false, true, StrategyCategory.FUNCTIONAL),
-        FUNCTIONAL_DATA_DRIVEN("Data-driven testing", 2, true, false, false, StrategyCategory.FUNCTIONAL),
-        FUNCTIONAL_EXPLORATORY("Exploratory testing", 3, true, false, true, StrategyCategory.FUNCTIONAL),
 
-        // === SECURITY TESTING STRATEGIES ===
-        SECURITY_BASIC("Basic security validation", 2, false, true, false, StrategyCategory.SECURITY),
-        SECURITY_OWASP_TOP10("OWASP Top 10 testing", 4, false, true, true, StrategyCategory.SECURITY),
-        SECURITY_PENETRATION("Penetration testing", 5, false, true, true, StrategyCategory.SECURITY),
-        SECURITY_INJECTION("Injection attack testing", 4, false, true, true, StrategyCategory.SECURITY),
-        SECURITY_XSS("XSS vulnerability testing", 4, false, true, true, StrategyCategory.SECURITY),
-        SECURITY_AUTHENTICATION("Authentication testing", 3, false, true, false, StrategyCategory.SECURITY),
-        SECURITY_AUTHORIZATION("Authorization testing", 3, false, true, false, StrategyCategory.SECURITY),
-        SECURITY_SESSION("Session management testing", 3, false, true, false, StrategyCategory.SECURITY),
-        SECURITY_ENCRYPTION("Encryption validation", 4, false, true, true, StrategyCategory.SECURITY),
-        SECURITY_CSRF("CSRF protection testing", 3, false, true, false, StrategyCategory.SECURITY),
-
-        // === PERFORMANCE TESTING STRATEGIES ===
-        PERFORMANCE_BASIC("Basic performance testing", 2, false, false, true, StrategyCategory.PERFORMANCE),
-        PERFORMANCE_LOAD("Load testing", 3, false, false, true, StrategyCategory.PERFORMANCE),
-        PERFORMANCE_STRESS("Stress testing", 4, false, false, true, StrategyCategory.PERFORMANCE),
-        PERFORMANCE_VOLUME("Volume testing", 4, false, false, true, StrategyCategory.PERFORMANCE),
-        PERFORMANCE_SPIKE("Spike testing", 4, false, false, true, StrategyCategory.PERFORMANCE),
-        PERFORMANCE_ENDURANCE("Endurance testing", 5, false, false, true, StrategyCategory.PERFORMANCE),
-        PERFORMANCE_SCALABILITY("Scalability testing", 5, false, false, true, StrategyCategory.PERFORMANCE),
-
-        // === ADVANCED TESTING STRATEGIES ===
-        ADVANCED_AI_DRIVEN("AI-driven testing", 5, true, false, true, StrategyCategory.ADVANCED),
-        ADVANCED_MUTATION("Mutation testing", 4, true, false, true, StrategyCategory.ADVANCED),
-        ADVANCED_PROPERTY_BASED("Property-based testing", 4, true, false, true, StrategyCategory.ADVANCED),
-        ADVANCED_QUANTUM("Quantum computing testing", 5, true, true, true, StrategyCategory.SPECIALIZED);
-
-        private final String description;
-        private final int complexity;
-        private final boolean supportsFunctional;
-        private final boolean supportsSecurity;
-        private final boolean requiresAdvancedAnalysis;
-        private final StrategyCategory category;
-
-        StrategyType(String description, int complexity, boolean supportsFunctional,
-                     boolean supportsSecurity, boolean requiresAdvancedAnalysis, StrategyCategory category) {
-            this.description = description;
-            this.complexity = complexity;
-            this.supportsFunctional = supportsFunctional;
-            this.supportsSecurity = supportsSecurity;
-            this.requiresAdvancedAnalysis = requiresAdvancedAnalysis;
-            this.category = category;
-        }
-
-        public String getDescription() { return description; }
-        public int getComplexity() { return complexity; }
-        public boolean supportsFunctional() { return supportsFunctional; }
-        public boolean supportsSecurity() { return supportsSecurity; }
-        public boolean requiresAdvancedAnalysis() { return requiresAdvancedAnalysis; }
-        public StrategyCategory getCategory() { return category; }
-    }
 
     /**
      * Standard StrategyCategory enum - EXACT MATCH with rehber
@@ -130,48 +66,7 @@ public class TestStrategyManager {
         public String getDescription() { return description; }
     }
 
-    /**
-     * Standard TestGenerationScenario enum - EXACT MATCH with rehber (200+ values)
-     */
-    public enum TestGenerationScenario {
-        // === FUNCTIONAL SCENARIOS ===
-        HAPPY_PATH("Happy path testing", StrategyType.FUNCTIONAL_BASIC, 1, ScenarioCategory.FUNCTIONAL),
-        ERROR_HANDLING("Error handling testing", StrategyType.FUNCTIONAL_COMPREHENSIVE, 2, ScenarioCategory.FUNCTIONAL),
-        INPUT_VALIDATION("Input validation testing", StrategyType.FUNCTIONAL_BOUNDARY, 2, ScenarioCategory.FUNCTIONAL),
-        OUTPUT_VERIFICATION("Output verification testing", StrategyType.FUNCTIONAL_COMPREHENSIVE, 2, ScenarioCategory.FUNCTIONAL),
 
-        // === SECURITY SCENARIOS ===
-        SQL_INJECTION_BASIC("Basic SQL injection testing", StrategyType.SECURITY_INJECTION, 3, ScenarioCategory.SECURITY),
-        XSS_REFLECTED("Reflected XSS testing", StrategyType.SECURITY_XSS, 3, ScenarioCategory.SECURITY),
-        AUTHENTICATION_BYPASS("Authentication bypass testing", StrategyType.SECURITY_AUTHENTICATION, 4, ScenarioCategory.SECURITY),
-
-        // === PERFORMANCE SCENARIOS ===
-        LOAD_TESTING_LIGHT("Light load testing", StrategyType.PERFORMANCE_LOAD, 2, ScenarioCategory.PERFORMANCE),
-        STRESS_TESTING_CPU("CPU stress testing", StrategyType.PERFORMANCE_STRESS, 4, ScenarioCategory.PERFORMANCE),
-
-        // === BOUNDARY SCENARIOS ===
-        BOUNDARY_MIN("Minimum boundary testing", StrategyType.FUNCTIONAL_BOUNDARY, 2, ScenarioCategory.BOUNDARY),
-        BOUNDARY_MAX("Maximum boundary testing", StrategyType.FUNCTIONAL_BOUNDARY, 2, ScenarioCategory.BOUNDARY),
-        NULL_VALUE_HANDLING("Null value handling", StrategyType.FUNCTIONAL_EDGE_CASE, 2, ScenarioCategory.BOUNDARY);
-
-        private final String description;
-        private final StrategyType recommendedStrategy;
-        private final int complexity;
-        private final ScenarioCategory category;
-
-        TestGenerationScenario(String description, StrategyType recommendedStrategy,
-                               int complexity, ScenarioCategory category) {
-            this.description = description;
-            this.recommendedStrategy = recommendedStrategy;
-            this.complexity = complexity;
-            this.category = category;
-        }
-
-        public String getDescription() { return description; }
-        public StrategyType getRecommendedStrategy() { return recommendedStrategy; }
-        public int getComplexity() { return complexity; }
-        public ScenarioCategory getCategory() { return category; }
-    }
 
     /**
      * Standard ScenarioCategory - EXACT MATCH with rehber
@@ -183,74 +78,7 @@ public class TestStrategyManager {
 
     // ===== STANDARD DATA CLASSES - EXACT MATCH with Tutarlılık Rehberi =====
 
-    /**
-     * Standard EndpointInfo class - EXACT MATCH with rehber interface
-     */
-    public static class EndpointInfo {
-        private String method;
-        private String path;
-        private String operationId;
-        private List<ParameterInfo> parameters;
-        private RequestBodyInfo requestBodyInfo;
-        private Map<String, ResponseInfo> responses;
-        private List<String> securitySchemes;
-        private boolean requiresAuthentication;
-        private boolean hasParameters;
-        private boolean hasRequestBody;
 
-        public EndpointInfo() {
-        }
-
-        public EndpointInfo(String method, String path, String operationId) {
-            this.method = method;
-            this.path = path;
-            this.operationId = operationId;
-            this.parameters = new ArrayList<>();
-            this.responses = new HashMap<>();
-            this.securitySchemes = new ArrayList<>();
-        }
-
-        // Standard getters - EXACT MATCH with rehber
-        public String getMethod() { return method; }
-        public String getPath() { return path; }
-        public String getOperationId() { return operationId; }
-        public List<ParameterInfo> getParameters() { return parameters != null ? parameters : new ArrayList<>(); }
-        public RequestBodyInfo getRequestBodyInfo() { return requestBodyInfo; }
-        public Map<String, ResponseInfo> getResponses() { return responses != null ? responses : new HashMap<>(); }
-        public List<String> getSecuritySchemes() { return securitySchemes != null ? securitySchemes : new ArrayList<>(); }
-        public boolean isRequiresAuthentication() { return requiresAuthentication; }
-        public boolean isHasParameters() { return hasParameters; }
-        public boolean isHasRequestBody() { return hasRequestBody; }
-
-        // Setters for builder
-        public void setMethod(String method) { this.method = method; }
-        public void setPath(String path) { this.path = path; }
-        public void setOperationId(String operationId) { this.operationId = operationId; }
-        public void setParameters(List<ParameterInfo> parameters) {
-            this.parameters = parameters;
-            this.hasParameters = parameters != null && !parameters.isEmpty();
-        }
-        public void setRequestBodyInfo(RequestBodyInfo requestBodyInfo) {
-            this.requestBodyInfo = requestBodyInfo;
-            this.hasRequestBody = requestBodyInfo != null;
-        }
-        public void setResponses(Map<String, ResponseInfo> responses) { this.responses = responses; }
-        public void setSecuritySchemes(List<String> securitySchemes) { this.securitySchemes = securitySchemes; }
-        public void setRequiresAuthentication(boolean requiresAuthentication) { this.requiresAuthentication = requiresAuthentication; }
-
-        @Override
-        public int hashCode() { return Objects.hash(method, path, operationId); }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (this == obj) return true;
-            if (obj == null || getClass() != obj.getClass()) return false;
-            EndpointInfo that = (EndpointInfo) obj;
-            return Objects.equals(method, that.method) &&
-                    Objects.equals(path, that.path) &&
-                    Objects.equals(operationId, that.operationId);
-        }
-    }
 
     /**
      * Standard ParameterInfo class - EXACT MATCH with rehber
@@ -316,75 +144,7 @@ public class TestStrategyManager {
         public void setSchema(Object schema) { this.schema = schema; }
     }
 
-    /**
-     * Standard GeneratedTestCase with builder pattern - EXACT MATCH with rehber
-     */
-    public static class GeneratedTestCase {
-        private String testId;
-        private String testName;
-        private String description;
-        private TestGenerationScenario scenario;
-        private StrategyType strategyType;
-        private EndpointInfo endpoint;
-        private List<TestStep> testSteps;
-        private TestDataSet testData;
-        private List<TestAssertion> assertions;
-        private int priority;
-        private Duration estimatedDuration;
-        private int complexity;
-        private Set<String> tags;
-        private Instant generationTimestamp;
 
-        // Private constructor for builder
-        private GeneratedTestCase() {}
-
-        // Standard getters - EXACT MATCH with rehber
-        public String getTestId() { return testId; }
-        public String getTestName() { return testName; }
-        public String getDescription() { return description; }
-        public TestGenerationScenario getScenario() { return scenario; }
-        public StrategyType getStrategyType() { return strategyType; }
-        public EndpointInfo getEndpoint() { return endpoint; }
-        public List<TestStep> getTestSteps() { return testSteps != null ? testSteps : new ArrayList<>(); }
-        public TestDataSet getTestData() { return testData; }
-        public List<TestAssertion> getAssertions() { return assertions != null ? assertions : new ArrayList<>(); }
-        public int getPriority() { return priority; }
-        public Duration getEstimatedDuration() { return estimatedDuration; }
-        public int getComplexity() { return complexity; }
-        public Set<String> getTags() { return tags != null ? tags : new HashSet<>(); }
-        public Instant getGenerationTimestamp() { return generationTimestamp; }
-
-        /**
-         * Standard Builder pattern - EXACT MATCH with rehber
-         */
-        public static class Builder {
-            private GeneratedTestCase testCase = new GeneratedTestCase();
-
-            public Builder withTestId(String testId) { testCase.testId = testId; return this; }
-            public Builder withTestName(String testName) { testCase.testName = testName; return this; }
-            public Builder withDescription(String description) { testCase.description = description; return this; }
-            public Builder withScenario(TestGenerationScenario scenario) { testCase.scenario = scenario; return this; }
-            public Builder withStrategyType(StrategyType strategyType) { testCase.strategyType = strategyType; return this; }
-            public Builder withEndpoint(EndpointInfo endpoint) { testCase.endpoint = endpoint; return this; }
-            public Builder withTestSteps(List<TestStep> testSteps) { testCase.testSteps = testSteps; return this; }
-            public Builder withTestData(TestDataSet testData) { testCase.testData = testData; return this; }
-            public Builder withAssertions(List<TestAssertion> assertions) { testCase.assertions = assertions; return this; }
-            public Builder withPriority(int priority) { testCase.priority = priority; return this; }
-            public Builder withEstimatedDuration(Duration estimatedDuration) { testCase.estimatedDuration = estimatedDuration; return this; }
-            public Builder withComplexity(int complexity) { testCase.complexity = complexity; return this; }
-            public Builder withTags(Set<String> tags) { testCase.tags = tags; return this; }
-
-            public GeneratedTestCase build() {
-                if (testCase.generationTimestamp == null) {
-                    testCase.generationTimestamp = Instant.now();
-                }
-                return testCase;
-            }
-        }
-
-        // Standard builder factory method - EXACT MATCH with rehber
-        public static Builder builder() { return new Builder(); }
-    }
 
     /**
      * Standard ComprehensiveTestSuite - EXACT MATCH with rehber interface
@@ -463,53 +223,9 @@ public class TestStrategyManager {
 
     // ===== SUPPORTING STANDARD CLASSES =====
 
-    public static class TestStep {
-        private String action;
-        private String description;
-        private Map<String, Object> parameters;
 
-        public TestStep() {}
-        public TestStep(String action, String description) {
-            this.action = action;
-            this.description = description;
-            this.parameters = new HashMap<>();
-        }
 
-        public String getAction() { return action; }
-        public String getDescription() { return description; }
-        public Map<String, Object> getParameters() { return parameters != null ? parameters : new HashMap<>(); }
-        public void setAction(String action) { this.action = action; }
-        public void setDescription(String description) { this.description = description; }
-        public void setParameters(Map<String, Object> parameters) { this.parameters = parameters; }
-    }
 
-    public static class TestDataSet {
-        private Map<String, Object> data;
-
-        public TestDataSet() {}
-        public Map<String, Object> getData() { return data != null ? data : new HashMap<>(); }
-        public void setData(Map<String, Object> data) { this.data = data; }
-    }
-
-    public static class TestAssertion {
-        private String type;
-        private String condition;
-        private Object expected;
-
-        public TestAssertion() {}
-        public TestAssertion(String type, String condition, Object expected) {
-            this.type = type;
-            this.condition = condition;
-            this.expected = expected;
-        }
-
-        public String getType() { return type; }
-        public String getCondition() { return condition; }
-        public Object getExpected() { return expected; }
-        public void setType(String type) { this.type = type; }
-        public void setCondition(String condition) { this.condition = condition; }
-        public void setExpected(Object expected) { this.expected = expected; }
-    }
 
     /**
      * Standard StrategyRecommendation - Base class compatible with rehber
@@ -529,46 +245,7 @@ public class TestStrategyManager {
         public void setConfidence(double confidence) { this.confidence = confidence; }
     }
 
-    /**
-     * AdvancedStrategyRecommendation extends StrategyRecommendation - Compatible with rehber
-     */
-    public static class AdvancedStrategyRecommendation extends StrategyRecommendation {
-        private Duration estimatedExecutionTime;
-        private int estimatedTestCases;
-        private EndpointAnalysis endpointAnalysis;
-        private long timestamp;
 
-        public AdvancedStrategyRecommendation() {}
-
-        public Duration getEstimatedExecutionTime() { return estimatedExecutionTime; }
-        public int getEstimatedTestCases() { return estimatedTestCases; }
-        public EndpointAnalysis getEndpointAnalysis() { return endpointAnalysis; }
-        public long getTimestamp() { return timestamp; }
-        public void setEstimatedExecutionTime(Duration estimatedExecutionTime) { this.estimatedExecutionTime = estimatedExecutionTime; }
-        public void setEstimatedTestCases(int estimatedTestCases) { this.estimatedTestCases = estimatedTestCases; }
-        public void setEndpointAnalysis(EndpointAnalysis endpointAnalysis) { this.endpointAnalysis = endpointAnalysis; }
-        public void setTimestamp(long timestamp) { this.timestamp = timestamp; }
-
-        public static class Builder {
-            private AdvancedStrategyRecommendation recommendation = new AdvancedStrategyRecommendation();
-
-            public Builder withPrimaryStrategy(StrategyType strategy) { recommendation.setPrimaryStrategy(strategy); return this; }
-            public Builder withComplementaryStrategies(List<StrategyType> strategies) { recommendation.setComplementaryStrategies(strategies); return this; }
-            public Builder withConfidence(double confidence) { recommendation.setConfidence(confidence); return this; }
-            public Builder withEstimatedExecutionTime(Duration time) { recommendation.setEstimatedExecutionTime(time); return this; }
-            public Builder withEstimatedTestCases(int count) { recommendation.setEstimatedTestCases(count); return this; }
-            public Builder withEndpointAnalysis(EndpointAnalysis analysis) { recommendation.setEndpointAnalysis(analysis); return this; }
-            public Builder withTimestamp(long timestamp) { recommendation.setTimestamp(timestamp); return this; }
-
-            public AdvancedStrategyRecommendation build() {
-                return recommendation;
-            }
-        }
-
-        public static Builder builder() {
-            return new Builder();
-        }
-    }
 
     // Supporting classes (placeholder implementations)
     public static class EndpointAnalysis {
@@ -795,7 +472,7 @@ public class TestStrategyManager {
         List<StrategyType> complementaryStrategies = new ArrayList<>();
 
         // Add security testing if authentication required
-        if (endpoint.isRequiresAuthentication() && primaryStrategy.getCategory() != StrategyCategory.SECURITY) {
+        if (endpoint.isRequiresAuthentication() && !primaryStrategy.getCategory().equals("SECURITY")) {
             complementaryStrategies.add(StrategyType.SECURITY_AUTHENTICATION);
             complementaryStrategies.add(StrategyType.SECURITY_AUTHORIZATION);
         }
@@ -968,24 +645,22 @@ public class TestStrategyManager {
 
     private List<TestStep> generateTestSteps(EndpointInfo endpoint, TestGenerationScenario scenario) {
         List<TestStep> steps = new ArrayList<>();
-        steps.add(new TestStep("SETUP", "Setup test environment"));
-        steps.add(new TestStep("EXECUTE", "Execute " + endpoint.getMethod() + " " + endpoint.getPath()));
-        steps.add(new TestStep("VERIFY", "Verify response and assertions"));
+        steps.add(new TestStep("SETUP", "Setup test environment", 1));
+        steps.add(new TestStep("EXECUTE", "Execute " + endpoint.getMethod() + " " + endpoint.getPath(), 2));
+        steps.add(new TestStep("VERIFY", "Verify response and assertions", 3));
         return steps;
     }
 
     private TestDataSet generateTestDataSet(EndpointInfo endpoint, TestGenerationScenario scenario) {
         TestDataSet testData = new TestDataSet();
-        Map<String, Object> data = new HashMap<>();
-        data.put("scenario", scenario.name());
-        data.put("expectedStatus", getExpectedStatusCode(scenario));
-        testData.setData(data);
+        testData.addParameterValue("scenario", scenario.name());
+        testData.addParameterValue("expectedStatus", getExpectedStatusCode(scenario));
         return testData;
     }
 
     private List<TestAssertion> generateTestAssertions(EndpointInfo endpoint, TestGenerationScenario scenario) {
         List<TestAssertion> assertions = new ArrayList<>();
-        assertions.add(new TestAssertion("STATUS_CODE", "equals", getExpectedStatusCode(scenario)));
+        assertions.add(new TestAssertion("STATUS_CODE", "Verify response status code", "equals " + getExpectedStatusCode(scenario)));
         return assertions;
     }
 
@@ -1023,8 +698,8 @@ public class TestStrategyManager {
 
     private Set<String> generateTestTags(EndpointInfo endpoint, TestGenerationScenario scenario, StrategyType strategyType) {
         Set<String> tags = new HashSet<>();
-        tags.add(strategyType.getCategory().name().toLowerCase());
-        tags.add(scenario.getCategory().name().toLowerCase());
+        tags.add(strategyType.getCategory().toLowerCase());
+        tags.add(scenario.getCategory().toLowerCase());
         tags.add(endpoint.getMethod().toLowerCase());
         return tags;
     }
