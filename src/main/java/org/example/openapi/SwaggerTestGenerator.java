@@ -42,10 +42,10 @@ import java.util.regex.Pattern;
  * @version 5.0.0-ENTERPRISE-FIXED
  * @since 2025.1
  */
-public class ClaudeSwaggerTestGenerator5 {
+public class SwaggerTestGenerator {
 
     // ===== ENHANCED CONSTANTS =====
-    private static final Logger LOGGER = Logger.getLogger(ClaudeSwaggerTestGenerator5.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(SwaggerTestGenerator.class.getName());
     private static final String APP_VERSION = "5.0.0-ENTERPRISE-FIXED";
     private static final String BUILD_DATE = "2025-01-17";
     private static final String VENDOR = "Enhanced API Solutions";
@@ -313,7 +313,7 @@ public class ClaudeSwaggerTestGenerator5 {
     /**
      * Default constructor with standard enterprise configuration
      */
-    public ClaudeSwaggerTestGenerator5() {
+    public SwaggerTestGenerator() {
         this(EnhancedConfiguration.createDefault());
     }
 
@@ -322,7 +322,7 @@ public class ClaudeSwaggerTestGenerator5 {
      *
      * @param configuration Enhanced configuration object
      */
-    public ClaudeSwaggerTestGenerator5(EnhancedConfiguration configuration) {
+    public SwaggerTestGenerator(EnhancedConfiguration configuration) {
         this.configuration = validateAndOptimizeConfiguration(configuration);
 
         // Initialize core components with dependency injection
@@ -661,7 +661,7 @@ public class ClaudeSwaggerTestGenerator5 {
             EnhancedConfiguration config = buildEnhancedConfigurationFromCLI(cmd);
             validateConfigurationOrExit(config);
 
-            ClaudeSwaggerTestGenerator5 generator = new ClaudeSwaggerTestGenerator5(config);
+            SwaggerTestGenerator generator = new SwaggerTestGenerator(config);
             setupSignalHandlers(generator);
 
             EnterpriseTestGenerationResult result = generator.executeEnhancedWorkflow();
@@ -1277,7 +1277,7 @@ public class ClaudeSwaggerTestGenerator5 {
     private static void printVersionInfo() {}
     private static EnhancedConfiguration buildEnhancedConfigurationFromCLI(CommandLine cmd) { return EnhancedConfiguration.createDefault(); }
     private static void validateConfigurationOrExit(EnhancedConfiguration config) {}
-    private static void setupSignalHandlers(ClaudeSwaggerTestGenerator5 generator) {}
+    private static void setupSignalHandlers(SwaggerTestGenerator generator) {}
     private static void displayExecutionSummary(EnterpriseTestGenerationResult result) {}
 
     private EnhancedInputProcessingResult performEnhancedInputProcessing() {
@@ -1316,7 +1316,7 @@ public class ClaudeSwaggerTestGenerator5 {
      */
     @Override
     public String toString() {
-        return String.format("ClaudeSwaggerTestGenerator5{version=%s, mode=%s, processed=%d, successful=%d, failed=%d}",
+        return String.format("SwaggerTestGenerator{version=%s, mode=%s, processed=%d, successful=%d, failed=%d}",
                 APP_VERSION, configuration.getExecutionMode(), processedEndpoints.get(),
                 successfulEndpoints.get(), failedEndpoints.get());
     }
